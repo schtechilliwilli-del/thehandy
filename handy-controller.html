@@ -618,14 +618,16 @@ async function connect() {
 
   try {
     const info = await handyRequest('/info');
-    if (info && (info.connected !== undefined || info.fwVersion)) {
+    if (info && info.error) {
+      throw new Error(info.message || 'Ungültiger Key');
+    }
+    if (info && (info.connected !== undefined || info.fwVersion || info.hwVersion)) {
       connected = true;
       setStatus('Verbunden ✓', 'connected');
       enableScripts(true);
-      // Set HAMP mode
-      await handyRequest('/hamp', 'PUT', { state: 1 });
+      try { await handyRequest('/hamp', 'PUT', { state: 1 }); } catch(e) {}
     } else {
-      throw new Error('Ungültiger Key oder Gerät offline');
+      throw new Error('Gerät nicht erreichbar');
     }
   } catch(e) {
     setStatus('Fehler: ' + e.message, 'error');
