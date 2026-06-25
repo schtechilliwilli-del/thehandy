@@ -65,6 +65,15 @@
   .card.running { animation: pulse-glow 2s ease-in-out infinite; }
   
 
+
+  /* Remote Control */
+  .remote-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .btn-remote { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 8px; cursor: pointer; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; text-align: center; }
+  .btn-remote:active { transform: scale(0.95); background: var(--glow); border-color: var(--accent); }
+  .btn-remote:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-remote .r-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .btn-remote.danger { border-color: var(--danger); color: var(--danger); }
+  .btn-remote.accent { border-color: var(--accent); color: var(--accent); }
   /* Gamification / Timer / Challenge */
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .btn-feature { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; cursor: pointer; transition: all 0.2s; text-align: left; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
@@ -141,6 +150,37 @@
   <div class="claude-box" id="claudeComment">Wähle ein Skript und verbinde dein Gerät.</div>
 </div>
 
+
+
+<!-- Remote -->
+<div class="card">
+  <div class="card-title">▸ Fernbedienung</div>
+  <div class="remote-grid">
+    <button class="btn-remote" id="rUp" onclick="remoteUp()" disabled>
+      <span class="r-icon">⬆️</span>Höher
+    </button>
+    <button class="btn-remote accent" id="rPlay" onclick="remotePlay()" disabled>
+      <span class="r-icon">▶️</span>Start
+    </button>
+    <button class="btn-remote" id="rDown" onclick="remoteDown()" disabled>
+      <span class="r-icon">⬇️</span>Tiefer
+    </button>
+    <button class="btn-remote" id="rSlower" onclick="remoteSlower()" disabled>
+      <span class="r-icon">🐢</span>Langsam
+    </button>
+    <button class="btn-remote danger" id="rStop" onclick="stopScript()" disabled>
+      <span class="r-icon">⏹️</span>Stop
+    </button>
+    <button class="btn-remote" id="rFaster" onclick="remoteFaster()" disabled>
+      <span class="r-icon">⚡</span>Schnell
+    </button>
+  </div>
+  <div class="slider-row" style="margin-bottom:0">
+    <span class="slider-label" style="width:60px">Schritt</span>
+    <input type="range" id="remoteStep" min="5" max="30" value="10" style="flex:1" />
+    <span class="slider-val" id="remoteStepVal">10%</span>
+  </div>
+</div>
 
 <!-- Features -->
 <div class="card">
@@ -656,6 +696,54 @@ async function sendCommand() {
 
 
 
+
+
+// ─── Fernbedienung ────────────────────────────────────────────────────────────
+function getRemoteStep() {
+  const s = document.getElementById('remoteStep');
+  s.oninput = () => document.getElementById('remoteStepVal').textContent = s.value + '%';
+  return parseInt(s.value);
+}
+
+async function remotePlay() {
+  if (!isRunning) {
+    // Letztes Skript neu starten oder erstes
+    const id = currentScript?.id || SCRIPTS[0].id;
+    await runScript(id);
+  }
+}
+
+function remoteUp() {
+  const step = getRemoteStep();
+  const slider = document.getElementById('depthMinSlider');
+  if (!slider) return;
+  slider.value = Math.min(90, parseInt(slider.value) + step);
+  updateDepthMin(slider.value);
+  showClaudeComment('Höher: ' + slider.value + '%');
+}
+
+function remoteDown() {
+  const step = getRemoteStep();
+  const slider = document.getElementById('depthMaxSlider');
+  if (!slider) return;
+  slider.value = Math.max(10, parseInt(slider.value) - step);
+  updateDepthMax(slider.value);
+  showClaudeComment('Tiefer: ' + slider.value + '%');
+}
+
+function remoteFaster() {
+  const step = getRemoteStep();
+  const slider = document.getElementById('speedSlider');
+  slider.value = Math.min(100, parseInt(slider.value) + step);
+  updateSpeed(slider.value);
+}
+
+function remoteSlower() {
+  const step = getRemoteStep();
+  const slider = document.getElementById('speedSlider');
+  slider.value = Math.max(0, parseInt(slider.value) - step);
+  updateSpeed(slider.value);
+}
 
 // ─── Oh Gott ──────────────────────────────────────────────────────────────────
 async function ohGott() {
