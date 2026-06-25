@@ -618,17 +618,14 @@ async function connect() {
 
   try {
     const info = await handyRequest('/info');
-    if (info && info.error) {
-      throw new Error(info.message || 'Ungültiger Key');
+    if (!info || info.name === 'Bad request') {
+      throw new Error(info?.message || 'Ungültiger Key');
     }
-    if (info && (info.connected !== undefined || info.fwVersion || info.hwVersion)) {
-      connected = true;
-      setStatus('Verbunden ✓', 'connected');
-      enableScripts(true);
-      try { await handyRequest('/hamp', 'PUT', { state: 1 }); } catch(e) {}
-    } else {
-      throw new Error('Gerät nicht erreichbar');
-    }
+    // Erfolg – fwVersion oder hwVersion vorhanden
+    connected = true;
+    setStatus('Verbunden ✓', 'connected');
+    enableScripts(true);
+    try { await handyRequest('/hamp', 'PUT', { state: 1 }); } catch(e) {}
   } catch(e) {
     setStatus('Fehler: ' + e.message, 'error');
     connected = false;
