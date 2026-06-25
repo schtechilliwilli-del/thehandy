@@ -72,6 +72,25 @@
   .story-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 0.85rem; line-height: 1.7; color: var(--text); min-height: 120px; max-height: 300px; overflow-y: auto; }
   .btn-story-gen { width: 100%; margin-top: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 10px; padding: 11px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; }
   .btn-story-gen:hover { opacity: 0.85; } .btn-story-gen:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Gamification / Timer / Challenge */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .btn-feature { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; cursor: pointer; transition: all 0.2s; text-align: left; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+  .btn-feature:hover:not(:disabled) { border-color: var(--accent); background: var(--glow); }
+  .btn-feature:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-feature .f-icon { font-size: 1.3rem; display: block; margin-bottom: 6px; }
+  .btn-feature .f-name { font-weight: 600; font-size: 0.88rem; display: block; margin-bottom: 3px; }
+  .btn-feature .f-desc { font-size: 0.72rem; color: var(--muted); }
+  .timer-display { font-family: 'Space Mono', monospace; font-size: 2rem; color: var(--accent); text-align: center; padding: 10px; }
+  .score-display { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 6px; }
+  .bpm-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .btn-tap { background: var(--accent); border: none; border-radius: 10px; padding: 10px 18px; color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 600; cursor: pointer; }
+
+
+  .btn-tts { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+  .btn-tts.active { border-color: var(--success); color: var(--success); }
+  .btn-tts:hover { border-color: var(--accent); color: var(--text); }
+
 </style>
 </head>
 <body>
@@ -137,7 +156,45 @@
     <button class="btn-story-style" data-style="random">🎲 Zufall</button>
   </div>
   <div class="story-box" id="storyBox">Wähle einen Stil und starte die Geschichte…</div>
-  <button class="btn-story-gen" id="btnStory" onclick="generateStory()">▶ Geschichte starten</button>
+  <div style="display:flex;gap:8px;margin-top:10px;">
+  <button class="btn-story-gen" id="btnStory" onclick="generateStory()" style="flex:1">▶ Geschichte starten</button>
+  <button class="btn-tts" id="btnTts" onclick="toggleTts()" title="Vorlesen">🔊</button>
+</div>
+</div>
+
+
+<!-- Features -->
+<div class="card">
+  <div class="card-title">▸ Modi</div>
+  <div class="feature-grid">
+    <button class="btn-feature" id="btnChallenge" onclick="startChallenge()" disabled>
+      <span class="f-icon">🏆</span>
+      <span class="f-name">Ausdauer</span>
+      <span class="f-desc">Wie lange hältst du durch?</span>
+    </button>
+    <button class="btn-feature" id="btnRandom" onclick="startRandom()" disabled>
+      <span class="f-icon">🎲</span>
+      <span class="f-name">Zufall</span>
+      <span class="f-desc">Skript wechselt zufällig</span>
+    </button>
+    <button class="btn-feature" id="btnTimer" onclick="startTimer()" disabled>
+      <span class="f-icon">⏱</span>
+      <span class="f-name">Timer</span>
+      <span class="f-desc">5min Edging-Zyklus</span>
+    </button>
+    <button class="btn-feature" id="btnBpm" onclick="startBpmMode()" disabled>
+      <span class="f-icon">🎵</span>
+      <span class="f-name">BPM-Sync</span>
+      <span class="f-desc">Tempo per Tap setzen</span>
+    </button>
+  </div>
+  <div class="timer-display" id="timerDisplay" style="display:none">00:00</div>
+  <div class="score-display" id="scoreDisplay"></div>
+  <div class="bpm-row" id="bpmRow" style="display:none">
+    <button class="btn-tap" onclick="tapBpm()">👆 Tap</button>
+    <span id="bpmVal" style="font-family:'Space Mono',monospace;font-size:0.9rem;color:var(--accent)">BPM: –</span>
+    <span style="font-size:0.75rem;color:var(--muted)">Tippe im Rhythmus</span>
+  </div>
 </div>
 
 <!-- Commands -->
@@ -364,6 +421,10 @@ async function connect() {
     connected = true;
     setStatus('Verbunden ✓', 'connected');
     enableScripts(true);
+    ['btnChallenge','btnRandom','btnTimer','btnBpm'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.disabled = false;
+    });
   } catch(e) {
     setStatus('Fehler: ' + e.message, 'error');
     connected = false;
@@ -456,11 +517,11 @@ function updateDepth(val) {
 
 // ─── Story ────────────────────────────────────────────────────────────────────
 const STORY_PROMPTS = {
-  dominant: 'Schreib eine kurze, sehr explizite erotische Geschichte auf Deutsch. Eine dominante Frau hat die volle Kontrolle. Sie bestimmt Tempo und Intensität. Schreib direkt und sinnlich, ca. 150 Wörter.',
-  edging: 'Schreib eine kurze explizite erotische Geschichte auf Deutsch über Edging – mehrfaches Heranführen ans Limit ohne Erlaubnis zu kommen. Die Frau kontrolliert alles. Ca. 150 Wörter.',
-  multiple: 'Schreib eine kurze explizite erotische Geschichte auf Deutsch über multiple Orgasmen – er kommt, aber sie macht einfach weiter, ohne Pause. Ca. 150 Wörter.',
-  continue: 'Schreib eine kurze explizite erotische Geschichte auf Deutsch: Er kommt – aber sie hört nicht auf. Sie macht weiter, während er überempfindlich und erschöpft ist. Ca. 150 Wörter.',
-  random: 'Schreib eine kurze, sehr explizite erotische Geschichte auf Deutsch. Überrasch mich mit einem intensiven Szenario. Ca. 150 Wörter.'
+  dominant: `Schreib eine sinnliche, andeutende erotische Geschichte auf Deutsch. Eine selbstbewusste Frau hat die Kontrolle. Schreib atmosphärisch und poetisch – andeuten statt beschreiben. Steigere die Spannung langsam. Füge nach jedem Absatz einen Gerätebefehl ein: [SPEED:20-100] für Tempo, [SCRIPT:edging_top], [SCRIPT:edging_stamm], [SCRIPT:milking_hard], [SCRIPT:deep_seeding], [SCRIPT:ich_komme]. Ca. 200 Wörter, 4-5 Absätze.`,
+  edging: `Schreib eine sinnliche Geschichte auf Deutsch über das Spiel mit Grenzen – immer nah am Limit, nie darüber. Atmosphärisch, spannungsgeladen. Befehle nach jedem Absatz: [SPEED:20-100], [SCRIPT:edging_top], [SCRIPT:edging_stamm], [SCRIPT:edging_wurzel]. Ca. 200 Wörter.`,
+  multiple: `Schreib eine sinnliche Geschichte auf Deutsch über intensive Momente die nicht aufhören. Poetisch und andeutend. Befehle: [SPEED:20-100], [SCRIPT:milking_hard], [SCRIPT:ich_komme], [SCRIPT:deep_seeding]. Ca. 200 Wörter.`,
+  continue: `Schreib eine intensive sinnliche Geschichte auf Deutsch – der Moment ist da, aber es geht weiter. Andeutend, atmosphärisch. Befehle: [SPEED:20-100], [SCRIPT:ich_komme], [SCRIPT:milking_hard]. Ca. 200 Wörter.`,
+  random: `Schreib eine sinnliche, atmosphärische Geschichte auf Deutsch. Überrasch mich mit Stimmung und Spannung. Befehle nach Absätzen: [SPEED:20-100], [SCRIPT:edging_top/stamm/wurzel/milking_hard/deep_seeding/ich_komme]. Ca. 200 Wörter.`
 };
 
 async function generateStory() {
@@ -483,8 +544,8 @@ async function generateStory() {
       })
     });
     const data = await res.json();
-    const text = data.content?.[0]?.text || 'Fehler beim Generieren.';
-    typeStory(text, box);
+    const rawText = data.content?.[0]?.text || 'Fehler beim Generieren.';
+    typeStorySynced(rawText, box);
   } catch(e) {
     box.textContent = 'Fehler: ' + e.message;
   }
@@ -493,18 +554,70 @@ async function generateStory() {
   btn.textContent = '▶ Neue Geschichte';
 }
 
-function typeStory(text, box) {
+function parseStoryCommands(text) {
+  // Extrahiere Befehle und teile Text in Segmente
+  const segments = [];
+  const regex = /\[((SPEED:\d+)|(SCRIPT:[a-z_]+))\]/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    const cmd = match[1];
+    if (cmd.startsWith('SPEED:')) {
+      segments.push({ type: 'speed', value: parseInt(cmd.split(':')[1]) });
+    } else if (cmd.startsWith('SCRIPT:')) {
+      segments.push({ type: 'script', value: cmd.split(':')[1] });
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+  return segments;
+}
+
+async function typeStorySynced(rawText, box) {
+  const segments = parseStoryCommands(rawText);
   box.innerHTML = '';
-  let i = 0;
-  function next() {
-    if (i < text.length) {
-      box.innerHTML = text.slice(0, i + 1).replace(/\n/g, '<br>');
-      box.scrollTop = box.scrollHeight;
-      i++;
-      setTimeout(next, 12);
+  
+  for (const seg of segments) {
+    if (seg.type === 'text') {
+      // Text tippen
+      const clean = seg.content.replace(/\n/g, '<br>');
+      await typeSegment(clean, box);
+    } else if (seg.type === 'speed' && isRunning) {
+      // Geschwindigkeit anpassen
+      const slider = document.getElementById('speedSlider');
+      slider.value = seg.value;
+      updateSpeed(seg.value);
+    } else if (seg.type === 'script' && connected) {
+      // Skript wechseln
+      await runScript(seg.value);
     }
   }
-  next();
+}
+
+function typeSegment(html, box) {
+  return new Promise(resolve => {
+    const full = box.innerHTML + html;
+    let i = box.innerHTML.length;
+    // Vorlesen des Segments
+    const cleanText = html.replace(/<[^>]+>/g, '');
+    speakText(cleanText);
+    function next() {
+      if (i < full.length) {
+        box.innerHTML = full.slice(0, i + 1);
+        box.scrollTop = box.scrollHeight;
+        i++;
+        setTimeout(next, 14);
+      } else {
+        resolve();
+      }
+    }
+    next();
+  });
 }
 
 // ─── UI Helpers ───────────────────────────────────────────────────────────────
@@ -579,6 +692,212 @@ async function sendCommand() {
 
 
 
+
+
+
+// ─── Gamification ─────────────────────────────────────────────────────────────
+let challengeInterval = null;
+let challengeSeconds = 0;
+let highScore = parseInt(localStorage.getItem('handyHighScore') || '0');
+
+function startChallenge() {
+  if (challengeInterval) {
+    clearInterval(challengeInterval);
+    challengeInterval = null;
+    const s = challengeSeconds;
+    if (s > highScore) {
+      highScore = s;
+      localStorage.setItem('handyHighScore', highScore);
+    }
+    document.getElementById('scoreDisplay').textContent = 
+      'Session: ' + formatTime(s) + ' · Rekord: ' + formatTime(highScore);
+    document.getElementById('timerDisplay').style.display = 'none';
+    document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
+    challengeSeconds = 0;
+    return;
+  }
+  if (!isRunning) { showClaudeComment('Erst ein Skript starten!'); return; }
+  challengeSeconds = 0;
+  document.getElementById('timerDisplay').style.display = 'block';
+  document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  challengeInterval = setInterval(() => {
+    challengeSeconds++;
+    document.getElementById('timerDisplay').textContent = formatTime(challengeSeconds);
+  }, 1000);
+  showClaudeComment('Challenge gestartet – halt durch! 🏆');
+}
+
+// ─── Zufalls-Challenge ────────────────────────────────────────────────────────
+let randomInterval = null;
+
+function startRandom() {
+  if (randomInterval) {
+    clearInterval(randomInterval);
+    randomInterval = null;
+    document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Skript wechselt zufällig';
+    showClaudeComment('Zufall gestoppt.');
+    return;
+  }
+  if (!connected) { showClaudeComment('Erst verbinden!'); return; }
+  document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  
+  const randomScript = () => {
+    const ids = SCRIPTS.map(s => s.id);
+    const pick = ids[Math.floor(Math.random() * ids.length)];
+    runScript(pick);
+    showClaudeComment('Zufalls-Skript: ' + SCRIPTS.find(s=>s.id===pick).name + ' 🎲');
+  };
+  
+  randomScript();
+  const nextIn = () => (Math.random() * 25000 + 10000); // 10-35 Sekunden
+  
+  const scheduleNext = () => {
+    randomInterval = setTimeout(() => {
+      if (randomInterval !== null) { randomScript(); scheduleNext(); }
+    }, nextIn());
+  };
+  scheduleNext();
+  showClaudeComment('Zufall aktiv – Skript wechselt alle 10-35 Sek 🎲');
+}
+
+// ─── Timer-Modi ───────────────────────────────────────────────────────────────
+let timerModeInterval = null;
+let timerPhase = 0;
+const TIMER_PHASES = [
+  { name: 'Edging Stamm', script: 'edging_stamm', duration: 120 },
+  { name: 'Pause – atmen', script: null, duration: 20 },
+  { name: 'Edging Top', script: 'edging_top', duration: 90 },
+  { name: 'Pause – atmen', script: null, duration: 20 },
+  { name: 'Deep Seeding', script: 'deep_seeding', duration: 60 },
+  { name: 'Pause – atmen', script: null, duration: 30 },
+  { name: 'Milking Hard', script: 'milking_hard', duration: 60 },
+];
+let timerSeconds = 0;
+let timerPhaseIdx = 0;
+
+function startTimer() {
+  if (timerModeInterval) {
+    clearInterval(timerModeInterval);
+    timerModeInterval = null;
+    document.getElementById('timerDisplay').style.display = 'none';
+    document.getElementById('btnTimer').querySelector('.f-desc').textContent = '5min Edging-Zyklus';
+    stopScript();
+    return;
+  }
+  if (!connected) { showClaudeComment('Erst verbinden!'); return; }
+  
+  timerPhaseIdx = 0;
+  timerSeconds = 0;
+  document.getElementById('timerDisplay').style.display = 'block';
+  document.getElementById('btnTimer').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  
+  const runPhase = () => {
+    const phase = TIMER_PHASES[timerPhaseIdx];
+    timerSeconds = phase.duration;
+    showClaudeComment('Phase: ' + phase.name + ' – ' + phase.duration + 's');
+    if (phase.script) runScript(phase.script);
+    else { stopScript(); showClaudeComment('Pause – atme tief durch 🌬'); }
+  };
+  
+  runPhase();
+  timerModeInterval = setInterval(() => {
+    timerSeconds--;
+    document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
+    if (timerSeconds <= 0) {
+      timerPhaseIdx = (timerPhaseIdx + 1) % TIMER_PHASES.length;
+      runPhase();
+    }
+  }, 1000);
+}
+
+// ─── BPM Sync ─────────────────────────────────────────────────────────────────
+let tapTimes = [];
+let bpmInterval = null;
+
+function startBpmMode() {
+  const row = document.getElementById('bpmRow');
+  if (row.style.display === 'none') {
+    row.style.display = 'flex';
+    tapTimes = [];
+    document.getElementById('btnBpm').querySelector('.f-desc').textContent = 'Tippen zum Beenden';
+    showClaudeComment('BPM-Modus: Tippe im Rhythmus deines Songs 🎵');
+  } else {
+    row.style.display = 'none';
+    if (bpmInterval) { clearInterval(bpmInterval); bpmInterval = null; }
+    document.getElementById('btnBpm').querySelector('.f-desc').textContent = 'Tempo per Tap setzen';
+  }
+}
+
+function tapBpm() {
+  const now = Date.now();
+  tapTimes.push(now);
+  if (tapTimes.length > 8) tapTimes.shift();
+  if (tapTimes.length < 2) return;
+  
+  const intervals = [];
+  for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i-1]);
+  const avgInterval = intervals.reduce((a,b) => a+b) / intervals.length;
+  const bpm = Math.round(60000 / avgInterval);
+  
+  document.getElementById('bpmVal').textContent = 'BPM: ' + bpm;
+  
+  // Geschwindigkeit aus BPM berechnen (60-180 BPM → 20-100%)
+  const speed = Math.min(100, Math.max(10, Math.round((bpm - 60) / 1.2)));
+  const slider = document.getElementById('speedSlider');
+  slider.value = speed;
+  updateSpeed(speed);
+  showClaudeComment('BPM: ' + bpm + ' → Geschwindigkeit: ' + speed + '%');
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+// ─── Text-to-Speech ───────────────────────────────────────────────────────────
+let ttsEnabled = false;
+let ttsVoice = null;
+
+function initVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  // Deutsche Stimme bevorzugen, weiblich
+  ttsVoice = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('female'))
+    || voices.find(v => v.lang.startsWith('de'))
+    || voices[0];
+}
+
+window.speechSynthesis.onvoiceschanged = initVoices;
+initVoices();
+
+function toggleTts() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('btnTts');
+  if (ttsEnabled) {
+    btn.classList.add('active');
+    btn.textContent = '🔊';
+    showClaudeComment('Vorlesen aktiviert.');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🔇';
+    window.speechSynthesis.cancel();
+    showClaudeComment('Vorlesen deaktiviert.');
+  }
+}
+
+function speakText(text) {
+  if (!ttsEnabled) return;
+  window.speechSynthesis.cancel();
+  const clean = text.replace(/<[^>]+>/g, '').trim();
+  if (!clean) return;
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = 'de-DE';
+  utt.rate = 0.88;
+  utt.pitch = 1.05;
+  if (ttsVoice) utt.voice = ttsVoice;
+  window.speechSynthesis.speak(utt);
+}
 
 // ─── Speech Recognition ───────────────────────────────────────────────────────
 let recognition = null;
