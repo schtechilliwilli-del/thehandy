@@ -47,7 +47,7 @@
   .progress-wrap { background: var(--bg); border-radius: 8px; height: 6px; overflow: hidden; margin-bottom: 10px; }
   .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 8px; transition: width 0.5s ease; width: 0%; }
   .progress-info { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-bottom: 14px; }
-  .claude-box { background: var(--bg); border-left: 2px solid var(--accent); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 0.85rem; line-height: 1.6; color: var(--text); min-height: 56px; font-style: italic; position: relative; }
+  .claude-box { background: var(--bg); border-left: 2px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 18px; font-size: 1.15rem; line-height: 1.7; color: var(--text); min-height: 70px; font-style: italic; position: relative; }
   .claude-box::before { content: 'KI'; position: absolute; top: -8px; left: 12px; background: var(--accent); color: #fff; font-size: 0.6rem; font-family: 'Space Mono', monospace; padding: 1px 6px; border-radius: 4px; font-style: normal; font-weight: 700; letter-spacing: 0.1em; }
   .typing-cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent); margin-left: 2px; vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
@@ -517,14 +517,17 @@ async function connect() {
 }
 
 async function setHampSpeed(speed) {
-  try { await handyRequest('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.round(speed * speedMultiplier)) }); } catch(e) {}
+  // Basis-Speed des Skripts, wird durch Slider überschrieben wenn aktiv
+  const sliderVal = parseInt(document.getElementById('speedSlider').value);
+  const effective = sliderVal !== 50 ? sliderVal : Math.min(100, Math.round(speed));
+  try { await handyRequest('/hamp/velocity', 'PUT', { velocity: effective }); } catch(e) {}
 }
 
 async function setSlide(min, max) {
-  // Slider-Werte überschreiben Skript-Werte wenn gesetzt
-  const effectiveMin = (typeof customDepthMin !== 'undefined') ? customDepthMin : min;
-  const effectiveMax = (typeof customDepthMax !== 'undefined') ? customDepthMax : max;
-  try { await handyRequest('/slide', 'PUT', { min: Math.round(effectiveMin), max: Math.max(Math.round(effectiveMin)+5, Math.round(effectiveMax)) }); } catch(e) {}
+  // Slider-Werte haben immer Vorrang
+  const eMin = customDepthMin;
+  const eMax = customDepthMax;
+  try { await handyRequest('/slide', 'PUT', { min: eMin, max: Math.max(eMin + 5, eMax) }); } catch(e) {}
 }
 
 async function hampStart() { try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {} }
@@ -596,7 +599,10 @@ async function stopScript(showStopped = true) {
 function updateSpeed(val) {
   document.getElementById('speedVal').textContent = val + '%';
   speedMultiplier = val / 50;
-  if (isRunning && currentScript) setHampSpeed(currentScript.speed);
+  // Direkt velocity senden ohne Rhythmus zu unterbrechen
+  if (isRunning) {
+    handyRequest('/hamp/velocity', 'PUT', { velocity: Math.round(parseInt(val)) }).catch(()=>{});
+  }
 }
 
 let customDepthMax = 98;
@@ -605,27 +611,25 @@ let customDepthMin = 5;
 function updateDepthMax(val) {
   customDepthMax = parseInt(val);
   document.getElementById('depthMaxVal').textContent = val + '%';
-  // Min darf nicht größer als Max sein
   const minSlider = document.getElementById('depthMinSlider');
   if (customDepthMin >= customDepthMax - 5) {
     customDepthMin = customDepthMax - 10;
     minSlider.value = customDepthMin;
     document.getElementById('depthMinVal').textContent = customDepthMin + '%';
   }
-  if (isRunning && currentScript) setSlide(customDepthMin, customDepthMax);
+  if (isRunning) handyRequest('/slide', 'PUT', { min: customDepthMin, max: Math.max(customDepthMin+5, customDepthMax) }).catch(()=>{});
 }
 
 function updateDepthMin(val) {
   customDepthMin = parseInt(val);
   document.getElementById('depthMinVal').textContent = val + '%';
-  // Max darf nicht kleiner als Min sein
   const maxSlider = document.getElementById('depthMaxSlider');
   if (customDepthMin >= customDepthMax - 5) {
     customDepthMax = customDepthMin + 10;
     maxSlider.value = customDepthMax;
     document.getElementById('depthMaxVal').textContent = customDepthMax + '%';
   }
-  if (isRunning && currentScript) setSlide(customDepthMin, customDepthMax);
+  if (isRunning) handyRequest('/slide', 'PUT', { min: customDepthMin, max: Math.max(customDepthMin+5, customDepthMax) }).catch(()=>{});
 }
 
 // ─── Story ────────────────────────────────────────────────────────────────────
@@ -789,7 +793,7 @@ async function ohGott() {
   await setHampSpeed(6);
   showClaudeComment('Ganz langsam. Jeden Moment spüren.');
   let commentIdx = 0;
-  const comments = ['Ganz langsam.', 'Tief. Ohne Eile.', 'Jeden Millimeter spüren.', 'Atemlos.'];
+  const comments = ['Wie zum letzten Tropfen…', 'Ganz langsam. Jeder Moment zählt.', 'Tief. Ohne Eile.', 'Atemlos. Bis zum Ende.', 'Ich höre nicht auf.', 'Bitte Daddy!'];
   if (scriptInterval) clearInterval(scriptInterval);
   scriptInterval = setInterval(() => {
     step += 0.15;
