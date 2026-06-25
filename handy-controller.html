@@ -642,11 +642,11 @@ async function setSlide(min, max) {
 }
 
 async function hampStart() {
-  await handyRequest('/hamp/state', 'PUT', { state: 1 });
+  await handyRequest('/hamp/start', 'PUT', {});
 }
 
 async function hampStop() {
-  await handyRequest('/hamp/state', 'PUT', { state: 0 });
+  await handyRequest('/hamp/stop', 'PUT', {});
 }
 
 // ─── Script control ────────────────────────────────────────────────────────────
@@ -674,12 +674,12 @@ async function runScript(scriptId) {
   document.getElementById('activeScript').textContent = currentScript.name;
   document.getElementById('liveCard').classList.add('running');
 
-  // Set speed - korrekte Reihenfolge für Handy API v2
+  // Korrekte Reihenfolge: mode → slide → start → velocity
   const speed = Math.min(100, Math.round(currentScript.speed * speedMultiplier));
-  try { await handyRequest('/mode', 'PUT', { mode: 0 }); } catch(e) {} // HAMP mode
+  await handyRequest('/mode', 'PUT', { mode: 2 }); // HAMP = mode 2
   await setSlide(currentScript.strokeMin, currentScript.strokeMax);
-  await setHampSpeed(speed);
   await hampStart();
+  await setHampSpeed(speed); // velocity nur wenn bereits läuft
 
   // Progress + comment loop
   let commentIdx = 0;
