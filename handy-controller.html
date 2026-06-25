@@ -114,7 +114,7 @@
   <div class="card-title">▸ Live-Steuerung</div>
   <div class="controls-row">
     <button class="btn-stop" id="btnStop" onclick="stopScript()" disabled>⏹ Stop</button>
-    <button id="btnOhGott" onclick="ohGott()" disabled style="background:rgba(129,140,248,0.1);border:1px solid var(--accent2);border-radius:12px;padding:12px 16px;color:var(--accent2);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;">😮 Oh Gott</button>
+    <button id="btnOhGott" onclick="ohGott()" disabled style="background:rgba(129,140,248,0.1);border:1px solid var(--accent2);border-radius:12px;padding:12px 16px;color:var(--accent2);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;">💦 Oh Gott</button>
   </div>
   <div class="slider-row">
     <span class="slider-label">Geschw.</span>
@@ -122,9 +122,14 @@
     <span class="slider-val" id="speedVal">50%</span>
   </div>
   <div class="slider-row">
-    <span class="slider-label">Tiefe</span>
-    <input type="range" id="depthSlider" min="0" max="100" value="100" oninput="updateDepth(this.value)" disabled />
-    <span class="slider-val" id="depthVal">100%</span>
+    <span class="slider-label">Max Tiefe</span>
+    <input type="range" id="depthMaxSlider" min="10" max="100" value="98" oninput="updateDepthMax(this.value)" disabled />
+    <span class="slider-val" id="depthMaxVal">98%</span>
+  </div>
+  <div class="slider-row">
+    <span class="slider-label">Max Höhe</span>
+    <input type="range" id="depthMinSlider" min="0" max="90" value="5" oninput="updateDepthMin(this.value)" disabled />
+    <span class="slider-val" id="depthMinVal">5%</span>
   </div>
   <div class="progress-wrap">
     <div class="progress-bar" id="progressBar"></div>
@@ -203,7 +208,6 @@ let scriptInterval = null;
 let customInterval = null;
 let step = 0;
 let speedMultiplier = 1.0;
-let depthMultiplier = 1.0;
 let isRunning = false;
 
 // ─── Scripts ──────────────────────────────────────────────────────────────────
@@ -293,17 +297,6 @@ const SCRIPTS = [
     comments: ['Jetzt.', 'Ganz runter.', 'Langsam zurück.', 'Noch einmal.']
   },
   {
-    id: 'oh_gott',
-    name: 'Oh Gott…',
-    icon: '😮',
-    desc: 'Ganz langsam, voller Hub',
-    speed: 6,
-    strokeMin: 5,
-    strokeMax: 98,
-    useCustomLoop: false,
-    comments: ['Ganz langsam.', 'Tief. Ohne Eile.', 'Jeden Millimeter spüren.', 'Atemlos.']
-  },
-  {
     id: 'squat_ride',
     name: 'Squat Ride',
     icon: '🏋️',
@@ -331,7 +324,7 @@ const SCRIPTS = [
 // Pronebone: langsam runter → halten → schnell runter → langsam hoch → wiederholen
 async function proneboneLoop() {
   const s = currentScript;
-  const min = Math.round(s.strokeMin * depthMultiplier);
+  const min = Math.round(s.strokeMin);
   const max = Math.round(s.strokeMax);
   while (isRunning && currentScript?.id === 'pronebone') {
     // Langsam runter
@@ -358,7 +351,7 @@ async function proneboneLoop() {
 // Deep Seeding: schnell runter, langsam hoch
 async function deepSeedingLoop() {
   const s = currentScript;
-  const min = Math.round(s.strokeMin * depthMultiplier);
+  const min = Math.round(s.strokeMin);
   const max = Math.round(s.strokeMax);
   let fast = true;
   while (isRunning && currentScript?.id === 'deep_seeding') {
@@ -380,7 +373,7 @@ async function deepSeedingLoop() {
 async function ichKommeLoop() {
   const s = currentScript;
   const min = 5;
-  const max = Math.round(98 * depthMultiplier);
+  const max = Math.round(98);
   while (isRunning && currentScript?.id === 'ich_komme') {
     // Schnell ganz nach unten
     await setHampSpeed(100);
@@ -399,7 +392,7 @@ async function ichKommeLoop() {
 // Squat Ride: zwischen 80% und 100%, wählbare Geschwindigkeit
 async function squatRideLoop() {
   const s = currentScript;
-  const max = Math.round(98 * depthMultiplier);
+  const max = Math.round(98);
   const topMin = Math.round(max * 0.80);
   while (isRunning && currentScript?.id === 'squat_ride') {
     await setHampSpeed(Math.round(currentScript.speed * speedMultiplier));
@@ -487,8 +480,10 @@ async function setHampSpeed(speed) {
 }
 
 async function setSlide(min, max) {
-  const depthMax = Math.round(max * depthMultiplier);
-  try { await handyRequest('/slide', 'PUT', { min: Math.round(min), max: Math.max(Math.round(min)+5, depthMax) }); } catch(e) {}
+  // Slider-Werte überschreiben Skript-Werte wenn gesetzt
+  const effectiveMin = (typeof customDepthMin !== 'undefined') ? customDepthMin : min;
+  const effectiveMax = (typeof customDepthMax !== 'undefined') ? customDepthMax : max;
+  try { await handyRequest('/slide', 'PUT', { min: Math.round(effectiveMin), max: Math.max(Math.round(effectiveMin)+5, Math.round(effectiveMax)) }); } catch(e) {}
 }
 
 async function hampStart() { try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {} }
@@ -510,7 +505,8 @@ async function runScript(scriptId) {
 
   document.getElementById('btnStop').disabled = false;
   document.getElementById('speedSlider').disabled = false;
-  document.getElementById('depthSlider').disabled = false;
+  document.getElementById('depthMaxSlider').disabled = false;
+  document.getElementById('depthMinSlider').disabled = false;
   document.getElementById('activeScript').textContent = currentScript.name;
   document.getElementById('liveCard').classList.add('running');
 
@@ -548,7 +544,8 @@ async function stopScript(showStopped = true) {
   document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('btnStop').disabled = true;
   document.getElementById('speedSlider').disabled = true;
-  document.getElementById('depthSlider').disabled = true;
+  document.getElementById('depthMaxSlider').disabled = true;
+  document.getElementById('depthMinSlider').disabled = true;
   document.getElementById('liveCard').classList.remove('running');
   document.getElementById('progressBar').style.width = '0%';
   document.getElementById('progressText').textContent = '–';
@@ -561,10 +558,33 @@ function updateSpeed(val) {
   if (isRunning && currentScript) setHampSpeed(currentScript.speed);
 }
 
-function updateDepth(val) {
-  document.getElementById('depthVal').textContent = val + '%';
-  depthMultiplier = val / 100;
-  if (isRunning && currentScript) setSlide(currentScript.strokeMin, currentScript.strokeMax);
+let customDepthMax = 98;
+let customDepthMin = 5;
+
+function updateDepthMax(val) {
+  customDepthMax = parseInt(val);
+  document.getElementById('depthMaxVal').textContent = val + '%';
+  // Min darf nicht größer als Max sein
+  const minSlider = document.getElementById('depthMinSlider');
+  if (customDepthMin >= customDepthMax - 5) {
+    customDepthMin = customDepthMax - 10;
+    minSlider.value = customDepthMin;
+    document.getElementById('depthMinVal').textContent = customDepthMin + '%';
+  }
+  if (isRunning && currentScript) setSlide(customDepthMin, customDepthMax);
+}
+
+function updateDepthMin(val) {
+  customDepthMin = parseInt(val);
+  document.getElementById('depthMinVal').textContent = val + '%';
+  // Max darf nicht kleiner als Min sein
+  const maxSlider = document.getElementById('depthMaxSlider');
+  if (customDepthMin >= customDepthMax - 5) {
+    customDepthMax = customDepthMin + 10;
+    maxSlider.value = customDepthMax;
+    document.getElementById('depthMaxVal').textContent = customDepthMax + '%';
+  }
+  if (isRunning && currentScript) setSlide(customDepthMin, customDepthMax);
 }
 
 // ─── Story ────────────────────────────────────────────────────────────────────
@@ -640,7 +660,29 @@ async function sendCommand() {
 // ─── Oh Gott ──────────────────────────────────────────────────────────────────
 async function ohGott() {
   if (!connected) return;
-  await runScript('oh_gott');
+  if (isRunning) await stopScript(false);
+  isRunning = true;
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('depthMaxSlider').disabled = false;
+  document.getElementById('depthMinSlider').disabled = false;
+  document.getElementById('activeScript').textContent = 'Oh Gott…';
+  document.getElementById('liveCard').classList.add('running');
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  await handyRequest('/mode', 'PUT', { mode: 2 });
+  await handyRequest('/slide', 'PUT', { min: 5, max: 98 });
+  await hampStart();
+  await setHampSpeed(6);
+  showClaudeComment('Ganz langsam. Jeden Moment spüren.');
+  let commentIdx = 0;
+  const comments = ['Ganz langsam.', 'Tief. Ohne Eile.', 'Jeden Millimeter spüren.', 'Atemlos.'];
+  if (scriptInterval) clearInterval(scriptInterval);
+  scriptInterval = setInterval(() => {
+    step += 0.15;
+    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    const newIdx = Math.floor(step / 8) % comments.length;
+    if (newIdx !== commentIdx) { commentIdx = newIdx; showClaudeComment(comments[commentIdx]); }
+  }, 200);
 }
 
 // ─── Happy End ────────────────────────────────────────────────────────────────
