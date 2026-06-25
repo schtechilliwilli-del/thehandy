@@ -519,8 +519,11 @@ async function connect() {
 }
 
 async function setHampSpeed(speed) {
+  // Slider (0-100) als Multiplikator: 50 = neutral, 100 = doppelt so schnell, 0 = halb
   const sliderVal = parseInt(document.getElementById('speedSlider').value);
-  try { await handyRequest('/hamp/velocity', 'PUT', { velocity: sliderVal }); } catch(e) {}
+  const multiplier = sliderVal / 50;
+  const effective = Math.min(100, Math.max(1, Math.round(speed * multiplier)));
+  try { await handyRequest('/hamp/velocity', 'PUT', { velocity: effective }); } catch(e) {}
 }
 
 async function setSlide(min, max) {
@@ -602,7 +605,7 @@ function updateSpeed(val) {
   const v = parseInt(val);
   document.getElementById('speedVal').textContent = v + '%';
   speedMultiplier = v / 50;
-  if (isRunning) handyRequest('/hamp/velocity', 'PUT', { velocity: v }).catch(()=>{});
+  // Kein direkter API-Aufruf – Loop übernimmt beim nächsten Zyklus
 }
 
 let customDepthMax = 98;
