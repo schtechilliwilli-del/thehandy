@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Handy Controller</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #c084fc;
+    --accent2: #818cf8;
+    --danger: #f87171;
+    --success: #34d399;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow: rgba(192, 132, 252, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Connection */
+  .connection-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  .btn-connect {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-connect:hover { opacity: 0.85; }
+  .btn-connect:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin-right: 8px;
+    transition: background 0.3s;
+  }
+  .status-dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .status-dot.error { background: var(--danger); }
+
+  .status-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Scripts grid */
+  .scripts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .script-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .script-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--glow);
+    transform: translateY(-1px);
+  }
+
+  .script-btn.active {
+    border-color: var(--accent);
+    background: rgba(192, 132, 252, 0.1);
+    box-shadow: 0 0 16px var(--glow);
+  }
+
+  .script-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .script-btn .s-name {
+    font-weight: 600;
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .script-btn .s-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .script-btn .s-icon {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* Controls */
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .btn-stop {
+    flex: 1;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 12px;
+    padding: 12px;
+    color: var(--danger);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-stop:hover { background: rgba(248, 113, 113, 0.2); }
+  .btn-stop:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Speed */
+  .speed-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .speed-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--glow);
+  }
+
+  .speed-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    width: 36px;
+    text-align: right;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--bg);
+    border-radius: 8px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  /* Claude comment */
+  .claude-box {
+    background: var(--bg);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+    min-height: 56px;
+    font-style: italic;
+    position: relative;
+  }
+
+  .claude-box::before {
+    content: 'KI';
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Voice command */
+  .voice-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .voice-input {
+    flex: 1;
+  }
+
+  .btn-send {
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+
+  .btn-send:hover { border-color: var(--accent); background: var(--glow); }
+
+  /* Pulse animation when active */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 var(--glow); }
+    50% { box-shadow: 0 0 20px 4px var(--glow); }
+  }
+
+  .card.running {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>◈ HANDY CTRL</h1>
+  <p>Skript-Controller · The Handy API</p>
+</header>
+
+<!-- Connection -->
+<div class="card">
+  <div class="card-title">▸ Verbindung</div>
+  <div class="connection-row">
+    <input type="text" id="keyInput" placeholder="Connection Key eingeben…" autocomplete="off" />
+    <button class="btn-connect" id="btnConnect" onclick="connect()">Verbinden</button>
+  </div>
+  <div class="status-text">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Nicht verbunden</span>
+  </div>
+</div>
+
+<!-- Scripts -->
+<div class="card">
+  <div class="card-title">▸ Skripte</div>
+  <div class="scripts-grid" id="scriptsGrid">
+    <!-- Generated by JS -->
+  </div>
+</div>
+
+<!-- Live Control -->
+<div class="card" id="liveCard">
+  <div class="card-title">▸ Live-Steuerung</div>
+
+  <div class="controls-row">
+    <button class="btn-stop" id="btnStop" onclick="stopScript()" disabled>⏹ Stop</button>
+  </div>
+
+  <div class="speed-row">
+    <span class="speed-label">Geschw.</span>
+    <input type="range" id="speedSlider" min="0" max="100" value="50" oninput="updateSpeed(this.value)" disabled />
+    <span class="speed-val" id="speedVal">50%</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-info">
+    <span id="activeScript">Kein Skript aktiv</span>
+    <span id="progressText">–</span>
+  </div>
+
+  <div class="claude-box" id="claudeComment">Wähle ein Skript und verbinde dein Gerät.</div>
+</div>
+
+<!-- Voice/Text Commands -->
+<div class="card">
+  <div class="card-title">▸ Sprachbefehl</div>
+  <div class="voice-row">
+    <input type="text" id="cmdInput" class="voice-input" placeholder="z. B. schneller, pause, wechsel zu edging…" onkeydown="if(event.key==='Enter')sendCommand()" />
+    <button class="btn-send" onclick="sendCommand()">↵</button>
+  </div>
+</div>
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+const HANDY_BASE = 'https://handy-proxy.stuerztobias.workers.dev';
+
+
+let connectionKey = '';
+let connected = false;
+let currentScript = null;
+let scriptInterval = null;
+let step = 0;
+let speedMultiplier = 1.0;
+let isRunning = false;
+let claudeTyping = false;
+
+// ─── Scripts ──────────────────────────────────────────────────────────────────
+const SCRIPTS = [
+  {
+    id: 'pronebone',
+    name: 'Pronebone',
+    icon: '〰️',
+    desc: 'Tief, langsam, gleichmäßig',
+    speed: 35,
+    strokeMin: 10,
+    strokeMax: 95,
+    pattern: 'slow_deep',
+    comments: [
+      'Tief und gleichmäßig – lass dich fallen.',
+      'Spür jeden vollen Hub. Kein Stress, kein Eilen.',
+      'Diese Tiefe ist kein Ziel – sie ist der Weg.',
+      'Atme durch. Lass die Bewegung kommen und gehen.',
+    ]
+  },
+  {
+    id: 'edging_top',
+    name: 'Edging Top',
+    icon: '▲',
+    desc: 'Nur die Spitze, präzise',
+    speed: 55,
+    strokeMin: 65,
+    strokeMax: 95,
+    pattern: 'top_only',
+    comments: [
+      'Nur oben. Ganz präzise.',
+      'Bleib im Bereich – nicht mehr, nicht weniger.',
+      'Die Spannung baut sich auf. Lass sie.',
+      'Noch nicht. Warte.',
+    ]
+  },
+  {
+    id: 'edging_wurzel',
+    name: 'Edging Wurzel',
+    icon: '▼',
+    desc: 'Basis-Stimulation, tief',
+    speed: 50,
+    strokeMin: 5,
+    strokeMax: 35,
+    pattern: 'base_only',
+    comments: [
+      'Tief unten – die Basis hält alles.',
+      'Druckpunkt gefunden. Bleib dort.',
+      'Wurzel. Stabilität. Intensität.',
+      'Langsam. Tiefer als du denkst.',
+    ]
+  },
+  {
+    id: 'edging_stamm',
+    name: 'Edging Stamm',
+    icon: '◼',
+    desc: 'Mittlerer Bereich, rhythmisch',
+    speed: 60,
+    strokeMin: 30,
+    strokeMax: 70,
+    pattern: 'mid_rhythm',
+    comments: [
+      'Der Stamm – volle Kontrolle.',
+      'Rhythmisch. Gleichmäßig. Bewusst.',
+      'Keine Extreme. Nur das Zentrum.',
+      'Hier liegt die Ausdauer.',
+    ]
+  },
+  {
+    id: 'deepthroat',
+    name: 'Deepthroat',
+    icon: '↕️',
+    desc: 'Voller Hub, tief und schnell',
+    speed: 75,
+    strokeMin: 5,
+    strokeMax: 98,
+    pattern: 'full_fast',
+    comments: [
+      'Voller Weg. Ganz hinein.',
+      'Kein Zentimeter gespart.',
+      'Tief. Vollständig. Intensiv.',
+      'Bis ganz nach unten – und zurück.',
+    ]
+  },
+  {
+    id: 'milking_hard',
+    name: 'Milking Hard',
+    icon: '⚡',
+    desc: 'Schnell, rhythmisch, hart',
+    speed: 85,
+    strokeMin: 20,
+    strokeMax: 80,
+    pattern: 'hard_milk',
+    comments: [
+      'Kein Halten mehr.',
+      'Schnell. Hart. Rhythmisch.',
+      'Lass es passieren.',
+      'Der Rhythmus übernimmt die Kontrolle.',
+    ]
+  },
+  {
+    id: 'deep_seeding',
+    name: 'Deep Seeding',
+    icon: '🌊',
+    desc: 'Langsam, tief, pulsierend',
+    speed: 40,
+    strokeMin: 5,
+    strokeMax: 98,
+    pattern: 'pulse_deep',
+    comments: [
+      'Ganz tief. Und halten.',
+      'Wellen. Langsam. Unvermeidlich.',
+      'Tief und tiefer noch.',
+      'Lass los. Gib nach.',
+    ]
+  },
+  {
+    id: 'ich_komme',
+    name: 'Ich komme',
+    icon: '💥',
+    desc: 'Rhythmus wird noch definiert',
+    speed: 50,
+    strokeMin: 5,
+    strokeMax: 95,
+    pattern: 'ich_komme',
+    comments: [
+      'Lass es kommen.',
+      'Gib nach.',
+      'Jetzt.',
+      'Ja.',
+    ]
+  }
+];
+
+// ─── Pattern generators ────────────────────────────────────────────────────────
+function getStrokeForPattern(pattern, t, min, max) {
+  const range = max - min;
+  switch(pattern) {
+    case 'slow_deep':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 0.8)), vel: 0 };
+    case 'top_only':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 1.2)), vel: 0 };
+    case 'base_only':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 1.0)), vel: 0 };
+    case 'mid_rhythm':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 1.4)), vel: 0 };
+    case 'full_fast':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 1.8)), vel: 0 };
+    case 'hard_milk':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 2.2)), vel: 0 };
+    case 'ich_komme':
+      return { pos: min + range * (0.5 + 0.5 * Math.sin(t * 1.5)), vel: 0 };
+    case 'pulse_deep':
+      const pulse = Math.sin(t * 0.6) * 0.7 + Math.sin(t * 1.8) * 0.3;
+      return { pos: min + range * (0.5 + 0.5 * pulse), vel: 0 };
+    default:
+      return { pos: 50, vel: 0 };
+  }
+}
+
+// ─── Handy API calls ───────────────────────────────────────────────────────────
+async function handyRequest(endpoint, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: {
+      'X-Connection-Key': connectionKey,
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const url = HANDY_BASE + endpoint;
+  const res = await fetch(url, opts);
+  return res.json();
+}
+
+async function connect() {
+  connectionKey = document.getElementById('keyInput').value.trim();
+  if (!connectionKey) return;
+
+  setStatus('Verbinde…', '');
+  document.getElementById('btnConnect').disabled = true;
+
+  try {
+    const info = await handyRequest('/info');
+    if (info && (info.connected !== undefined || info.fwVersion)) {
+      connected = true;
+      setStatus('Verbunden ✓', 'connected');
+      enableScripts(true);
+      // Set HAMP mode
+      await handyRequest('/hamp', 'PUT', { state: 1 });
+    } else {
+      throw new Error('Ungültiger Key oder Gerät offline');
+    }
+  } catch(e) {
+    setStatus('Fehler: ' + e.message, 'error');
+    connected = false;
+  }
+  document.getElementById('btnConnect').disabled = false;
+}
+
+async function setHampSpeed(speed) {
+  await handyRequest('/hamp/velocity', 'PUT', { velocity: Math.round(speed) });
+}
+
+async function setSlide(min, max) {
+  await handyRequest('/slide', 'PUT', { min: Math.round(min), max: Math.round(max) });
+}
+
+async function hampStart() {
+  await handyRequest('/hamp/state', 'PUT', { state: 1 });
+}
+
+async function hampStop() {
+  await handyRequest('/hamp/state', 'PUT', { state: 0 });
+}
+
+// ─── Script control ────────────────────────────────────────────────────────────
+async function runScript(scriptId) {
+  if (!connected) {
+    alert('Bitte zuerst verbinden.');
+    return;
+  }
+
+  // Stop current
+  if (isRunning) await stopScript(false);
+
+  currentScript = SCRIPTS.find(s => s.id === scriptId);
+  if (!currentScript) return;
+
+  // Highlight button
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn_' + scriptId).classList.add('active');
+
+  isRunning = true;
+  step = 0;
+
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('speedSlider').disabled = false;
+  document.getElementById('activeScript').textContent = currentScript.name;
+  document.getElementById('liveCard').classList.add('running');
+
+  // Set speed
+  const speed = Math.min(100, Math.round(currentScript.speed * speedMultiplier));
+  await setHampSpeed(speed);
+  await setSlide(currentScript.strokeMin, currentScript.strokeMax);
+  await hampStart();
+
+  // Progress + comment loop
+  let commentIdx = 0;
+  showClaudeComment(currentScript.comments[0]);
+
+  scriptInterval = setInterval(() => {
+    step += 0.15;
+    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressText').textContent = Math.round(progress) + '%';
+
+    // Rotate comments
+    const newIdx = Math.floor(step / 8) % currentScript.comments.length;
+    if (newIdx !== commentIdx) {
+      commentIdx = newIdx;
+      showClaudeComment(currentScript.comments[commentIdx]);
+    }
+  }, 200);
+}
+
+async function stopScript(showStopped = true) {
+  if (scriptInterval) {
+    clearInterval(scriptInterval);
+    scriptInterval = null;
+  }
+  isRunning = false;
+  await hampStop();
+
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('speedSlider').disabled = true;
+  document.getElementById('liveCard').classList.remove('running');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressText').textContent = '–';
+
+  if (showStopped) {
+    document.getElementById('activeScript').textContent = 'Gestoppt';
+    showClaudeComment('Gestoppt. Wähle ein neues Skript wenn du bereit bist.');
+  }
+}
+
+function updateSpeed(val) {
+  document.getElementById('speedVal').textContent = val + '%';
+  speedMultiplier = val / 50;
+  if (isRunning && currentScript) {
+    const speed = Math.min(100, Math.round(currentScript.speed * speedMultiplier));
+    setHampSpeed(speed);
+  }
+}
+
+// ─── Claude comment display ────────────────────────────────────────────────────
+function showClaudeComment(text) {
+  const box = document.getElementById('claudeComment');
+  box.innerHTML = '';
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      box.innerHTML = text.slice(0, i + 1) + '<span class="typing-cursor"></span>';
+      i++;
+      setTimeout(type, 28 + Math.random() * 20);
+    } else {
+      box.innerHTML = text;
+    }
+  }
+  type();
+}
+
+// ─── Voice/Text commands ───────────────────────────────────────────────────────
+async function sendCommand() {
+  const input = document.getElementById('cmdInput');
+  const cmd = input.value.trim().toLowerCase();
+  input.value = '';
+  if (!cmd) return;
+
+  // Simple command parsing
+  if (cmd.includes('stop') || cmd.includes('pause') || cmd.includes('halt')) {
+    await stopScript();
+    return;
+  }
+
+  if (cmd.includes('schneller') || cmd.includes('faster') || cmd.includes('mehr')) {
+    const slider = document.getElementById('speedSlider');
+    slider.value = Math.min(100, parseInt(slider.value) + 15);
+    updateSpeed(slider.value);
+    showClaudeComment('Geschwindigkeit erhöht.');
+    return;
+  }
+
+  if (cmd.includes('langsamer') || cmd.includes('slower') || cmd.includes('weniger')) {
+    const slider = document.getElementById('speedSlider');
+    slider.value = Math.max(0, parseInt(slider.value) - 15);
+    updateSpeed(slider.value);
+    showClaudeComment('Geschwindigkeit reduziert.');
+    return;
+  }
+
+  // Script switch by name
+  for (const s of SCRIPTS) {
+    if (cmd.includes(s.id.replace('_', ' ')) || cmd.includes(s.name.toLowerCase())) {
+      await runScript(s.id);
+      return;
+    }
+  }
+
+  // Fallback: show command as comment
+  showClaudeComment('Befehl nicht erkannt: "' + cmd + '". Versuche: schneller, langsamer, stop, oder einen Skript-Namen.');
+}
+
+// ─── UI helpers ────────────────────────────────────────────────────────────────
+function setStatus(text, cls) {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + cls;
+}
+
+function enableScripts(on) {
+  document.querySelectorAll('.script-btn').forEach(b => b.disabled = !on);
+}
+
+function buildScriptButtons() {
+  const grid = document.getElementById('scriptsGrid');
+  grid.innerHTML = '';
+  SCRIPTS.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'script-btn';
+    btn.id = 'btn_' + s.id;
+    btn.disabled = true;
+    btn.innerHTML = `
+      <span class="s-icon">${s.icon}</span>
+      <span class="s-name">${s.name}</span>
+      <span class="s-desc">${s.desc}</span>
+    `;
+    btn.onclick = () => runScript(s.id);
+    grid.appendChild(btn);
+  });
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────────
+buildScriptButtons();
+</script>
+</body>
+</html>
