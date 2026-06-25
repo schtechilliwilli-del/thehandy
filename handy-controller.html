@@ -284,6 +284,17 @@ const SCRIPTS = [
     comments: ['Jetzt.', 'Ganz runter.', 'Langsam zurück.', 'Noch einmal.']
   },
   {
+    id: 'squat_ride',
+    name: 'Squat Ride',
+    icon: '🏋️',
+    desc: 'Nur oben 80-100%, wählbar',
+    speed: 50,
+    strokeMin: 78,
+    strokeMax: 98,
+    useCustomLoop: true,
+    comments: ['Oben bleiben.', 'Nur der obere Bereich.', 'Dein Tempo.', 'Bleib dran.']
+  },
+  {
     id: 'keep_riding',
     name: 'Keep Riding',
     icon: '🔄',
@@ -345,21 +356,35 @@ async function deepSeedingLoop() {
   }
 }
 
-// Ich komme: schnell runter, extrem langsam hoch
+// Ich komme: schnell ganz runter, langsam hoch zwischen 80-100%
 async function ichKommeLoop() {
   const s = currentScript;
-  const min = Math.round(s.strokeMin);
-  const max = Math.round(s.strokeMax * depthMultiplier);
+  const min = 5;
+  const max = Math.round(98 * depthMultiplier);
   while (isRunning && currentScript?.id === 'ich_komme') {
-    // Ruckartig nach unten – maximale Geschwindigkeit
+    // Schnell ganz nach unten
     await setHampSpeed(100);
     await setSlide(min, max);
-    await delay(400);
+    await delay(500);
     if (!isRunning) break;
-    // Extrem langsam nach oben
-    await setHampSpeed(5);
-    await setSlide(min, max);
-    await delay(4000);
+    // Langsam hoch – nur zwischen 80% und 100%
+    const topMin = Math.round(max * 0.80);
+    await setHampSpeed(8);
+    await setSlide(topMin, max);
+    await delay(3500);
+    if (!isRunning) break;
+  }
+}
+
+// Squat Ride: zwischen 80% und 100%, wählbare Geschwindigkeit
+async function squatRideLoop() {
+  const s = currentScript;
+  const max = Math.round(98 * depthMultiplier);
+  const topMin = Math.round(max * 0.80);
+  while (isRunning && currentScript?.id === 'squat_ride') {
+    await setHampSpeed(Math.round(currentScript.speed * speedMultiplier));
+    await setSlide(topMin, max);
+    await delay(500);
     if (!isRunning) break;
   }
 }
@@ -479,6 +504,7 @@ async function runScript(scriptId) {
   // Custom loop or standard comment loop
   if (currentScript.useCustomLoop) {
     if (scriptId === 'ich_komme') ichKommeLoop();
+    else if (scriptId === 'squat_ride') squatRideLoop();
     else if (scriptId === 'pronebone') proneboneLoop();
     else if (scriptId === 'deep_seeding') deepSeedingLoop();
     else if (scriptId === 'milking_hard') milkingLoop();
