@@ -60,9 +60,7 @@
   .btn-mic.active { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 12px rgba(248,113,113,0.3); animation: mic-pulse 1.5s ease-in-out infinite; }
   @keyframes mic-pulse { 0%,100% { box-shadow: 0 0 8px rgba(248,113,113,0.3); } 50% { box-shadow: 0 0 20px rgba(248,113,113,0.6); } }
 
-  .btn-mic { background: var(--border); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); cursor: pointer; font-size: 1rem; transition: all 0.2s; }
-  .btn-mic:hover { border-color: var(--accent); background: var(--glow); }
-  .btn-mic.listening { border-color: var(--danger); background: rgba(248,113,113,0.15); color: var(--danger); animation: pulse-glow 1s ease-in-out infinite; }
+
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 0 0 var(--glow); } 50% { box-shadow: 0 0 20px 4px var(--glow); } }
   .card.running { animation: pulse-glow 2s ease-in-out infinite; }
   
@@ -191,7 +189,6 @@
   <div class="card-title">▸ Befehl</div>
   <div class="voice-row">
     <input type="text" id="cmdInput" class="voice-input" placeholder="schneller, langsamer, stop, skript-name…" onkeydown="if(event.key==='Enter')sendCommand()" />
-    <button class="btn-mic" id="btnMic" onclick="toggleMic()" title="Spracheingabe">🎤</button>
     <button class="btn-send" onclick="sendCommand()">↵</button>
     <button class="btn-mic" id="btnMic" onclick="toggleMic()" title="Spracherkennung">🎤</button>
   </div>
@@ -294,6 +291,17 @@ const SCRIPTS = [
     strokeMax: 98,
     useCustomLoop: true,
     comments: ['Jetzt.', 'Ganz runter.', 'Langsam zurück.', 'Noch einmal.']
+  },
+  {
+    id: 'oh_gott',
+    name: 'Oh Gott…',
+    icon: '😮',
+    desc: 'Ganz langsam, voller Hub',
+    speed: 6,
+    strokeMin: 5,
+    strokeMax: 98,
+    useCustomLoop: false,
+    comments: ['Ganz langsam.', 'Tief. Ohne Eile.', 'Jeden Millimeter spüren.', 'Atemlos.']
   },
   {
     id: 'squat_ride',
@@ -632,14 +640,7 @@ async function sendCommand() {
 // ─── Oh Gott ──────────────────────────────────────────────────────────────────
 async function ohGott() {
   if (!connected) return;
-  showClaudeComment('Oh Gott… ganz langsam.');
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  await setSlide(5, 98);
-  await setHampSpeed(6);
-  await hampStart();
-  // Skript-Buttons update
-  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('activeScript').textContent = 'Oh Gott…';
+  await runScript('oh_gott');
 }
 
 // ─── Happy End ────────────────────────────────────────────────────────────────
