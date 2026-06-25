@@ -504,7 +504,8 @@ async function connect() {
     connected = true;
     setStatus('Verbunden ✓', 'connected');
     enableScripts(true);
-    ['btnChallenge','btnRandom','btnTimer'].forEach(id => {
+    ['btnChallenge','btnRandom','btnTimer','btnCountdown',
+     'btnOhGott','rUp','rDown','rPlay','rStop','rSlower','rFaster'].forEach(id => {
       const b = document.getElementById(id);
       if (b) b.disabled = false;
     });
