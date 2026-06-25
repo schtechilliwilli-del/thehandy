@@ -259,7 +259,7 @@ const SCRIPTS = [
     name: 'Pronebone',
     icon: '〰️',
     desc: 'Langsam dann schnell tief',
-    speed: 30,
+    speed: 15,
     strokeMin: 5,
     strokeMax: 98,
     useCustomLoop: true,
@@ -270,7 +270,7 @@ const SCRIPTS = [
     name: 'Edging Top',
     icon: '▲',
     desc: 'Nur die Spitze, präzise',
-    speed: 55,
+    speed: 30,
     strokeMin: 65,
     strokeMax: 95,
     comments: ['Nur oben. Ganz präzise.','Bleib im Bereich.','Die Spannung baut sich auf.','Noch nicht. Warte.']
@@ -280,7 +280,7 @@ const SCRIPTS = [
     name: 'Edging Wurzel',
     icon: '▼',
     desc: 'Basis-Stimulation, tief',
-    speed: 50,
+    speed: 25,
     strokeMin: 5,
     strokeMax: 35,
     comments: ['Tief unten.','Druckpunkt gefunden.','Wurzel. Stabilität.','Langsam. Tiefer.']
@@ -290,7 +290,7 @@ const SCRIPTS = [
     name: 'Edging Stamm',
     icon: '◼',
     desc: 'Mittlerer Bereich, rhythmisch',
-    speed: 60,
+    speed: 30,
     strokeMin: 30,
     strokeMax: 70,
     comments: ['Der Stamm – Kontrolle.','Rhythmisch. Gleichmäßig.','Keine Extreme.','Hier liegt die Ausdauer.']
@@ -310,7 +310,7 @@ const SCRIPTS = [
     name: 'Milking Hard',
     icon: '⚡',
     desc: 'Zufälliger Mix, Pausen',
-    speed: 85,
+    speed: 40,
     strokeMin: 5,
     strokeMax: 98,
     useCustomLoop: true,
@@ -321,7 +321,7 @@ const SCRIPTS = [
     name: 'Deep Seeding',
     icon: '🌊',
     desc: 'Schnell runter, langsam hoch',
-    speed: 80,
+    speed: 35,
     strokeMin: 5,
     strokeMax: 98,
     useCustomLoop: true,
@@ -343,7 +343,7 @@ const SCRIPTS = [
     name: 'Squat Ride',
     icon: '🏋️',
     desc: 'Nur oben 80-100%, wählbar',
-    speed: 50,
+    speed: 25,
     strokeMin: 78,
     strokeMax: 98,
     useCustomLoop: true,
@@ -354,7 +354,7 @@ const SCRIPTS = [
     name: 'Keep Riding',
     icon: '🔄',
     desc: 'Langsam, tief, gleichmäßig',
-    speed: 20,
+    speed: 10,
     strokeMin: 5,
     strokeMax: 98,
     comments: ['Lass es kommen.','Ganz langsam. Tief.','Jede Bewegung zählt.','Ja.']
@@ -370,7 +370,7 @@ async function proneboneLoop() {
   const max = Math.round(s.strokeMax);
   while (isRunning && currentScript?.id === 'pronebone') {
     // Langsam runter
-    await setHampSpeed(20);
+    await setHampSpeed(4);
     await setSlide(min, max);
     await delay(2000);
     if (!isRunning) break;
@@ -379,12 +379,12 @@ async function proneboneLoop() {
     await delay(800);
     if (!isRunning) break;
     // Schnell runter
-    await setHampSpeed(80);
+    await setHampSpeed(35);
     await setSlide(min, max);
     await delay(1200);
     if (!isRunning) break;
     // Langsam hoch
-    await setHampSpeed(20);
+    await setHampSpeed(4);
     await setSlide(min, max);
     await delay(2000);
   }
@@ -398,11 +398,11 @@ async function deepSeedingLoop() {
   let fast = true;
   while (isRunning && currentScript?.id === 'deep_seeding') {
     if (fast) {
-      await setHampSpeed(90);
+      await setHampSpeed(40);
       await setSlide(min, max);
       await delay(600);
     } else {
-      await setHampSpeed(15);
+      await setHampSpeed(5);
       await setSlide(min, max);
       await delay(2500);
     }
@@ -418,13 +418,13 @@ async function ichKommeLoop() {
   const max = Math.round(98);
   while (isRunning && currentScript?.id === 'ich_komme') {
     // Schnell ganz nach unten
-    await setHampSpeed(100);
+    await setHampSpeed(45);
     await setSlide(min, max);
     await delay(500);
     if (!isRunning) break;
     // Langsam hoch – nur zwischen 80% und 100%
     const topMin = Math.round(max * 0.80);
-    await setHampSpeed(8);
+    await setHampSpeed(5);
     await setSlide(topMin, max);
     await delay(3500);
     if (!isRunning) break;
@@ -454,21 +454,21 @@ async function milkingLoop() {
     const r = Math.random();
     if (r < 0.33) {
       // Voller Hub schnell
-      await setHampSpeed(90);
+      await setHampSpeed(40);
       await setSlide(min, max);
       await delay(1500);
       // Unten stehen
-      await setHampSpeed(10);
+      await setHampSpeed(4);
       await setSlide(min, min + 8);
       await delay(1000);
     } else if (r < 0.66) {
       // Obere Hälfte schnell
-      await setHampSpeed(85);
+      await setHampSpeed(38);
       await setSlide(mid, max);
       await delay(1200);
     } else {
       // Untere Hälfte schnell
-      await setHampSpeed(85);
+      await setHampSpeed(38);
       await setSlide(min, mid);
       await delay(1200);
       // Pause unten
@@ -519,10 +519,9 @@ async function connect() {
 }
 
 async function setHampSpeed(speed) {
-  // Slider (0-100) als Multiplikator: 50 = neutral, 100 = doppelt so schnell, 0 = halb
   const sliderVal = parseInt(document.getElementById('speedSlider').value);
-  const multiplier = sliderVal / 50;
-  const effective = Math.min(100, Math.max(1, Math.round(speed * multiplier)));
+  // Slider 0-100: direkt als Faktor auf Basis-Speed
+  const effective = Math.min(100, Math.max(1, Math.round(speed * (sliderVal / 50))));
   try { await handyRequest('/hamp/velocity', 'PUT', { velocity: effective }); } catch(e) {}
 }
 
@@ -536,7 +535,6 @@ async function setSlide(min, max) {
 async function hampStart() { try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {} }
 async function hampStop() { 
   try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
-  try { await handyRequest('/mode', 'PUT', { mode: 0 }); } catch(e) {} // zurück zu BASE mode
 }
 
 // ─── Script Control ───────────────────────────────────────────────────────────
@@ -594,7 +592,6 @@ async function stopScript(showStopped = true) {
   currentScript = null;
   if (scriptInterval) { clearInterval(scriptInterval); scriptInterval = null; }
   await hampStop();
-  await hampStop(); // zweimal senden zur Sicherheit
   document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('btnStop').disabled = true;
   document.getElementById('speedSlider').disabled = true;
@@ -610,7 +607,10 @@ function updateSpeed(val) {
   const v = parseInt(val);
   document.getElementById('speedVal').textContent = v + '%';
   speedMultiplier = v / 50;
-  // Kein direkter API-Aufruf – Loop übernimmt beim nächsten Zyklus
+  if (isRunning && currentScript) {
+    const effective = Math.min(100, Math.max(1, Math.round(currentScript.speed * speedMultiplier)));
+    handyRequest('/hamp/velocity', 'PUT', { velocity: effective }).catch(()=>{});
+  }
 }
 
 let customDepthMax = 98;
@@ -794,7 +794,7 @@ async function ohGott() {
   await handyRequest('/mode', 'PUT', { mode: 2 });
   await handyRequest('/slide', 'PUT', { min: 5, max: 98 });
   await hampStart();
-  await setHampSpeed(6);
+  await setHampSpeed(4);
   showClaudeComment('Ganz langsam. Jeden Moment spüren.');
   let commentIdx = 0;
   const comments = ['Wie zum letzten Tropfen…', 'Ganz langsam. Jeder Moment zählt.', 'Tief. Ohne Eile.', 'Atemlos. Bis zum Ende.', 'Ich höre nicht auf.', 'Bitte Daddy!'];
