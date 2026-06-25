@@ -518,22 +518,25 @@ async function connect() {
   document.getElementById('btnConnect').disabled = false;
 }
 
+// Velocity NUR setzen wenn Gerät läuft
 async function setHampSpeed(speed) {
+  if (!isRunning) return;
   const sliderVal = parseInt(document.getElementById('speedSlider').value);
-  // Slider 0-100: direkt als Faktor auf Basis-Speed
   const effective = Math.min(100, Math.max(1, Math.round(speed * (sliderVal / 50))));
   try { await handyRequest('/hamp/velocity', 'PUT', { velocity: effective }); } catch(e) {}
 }
 
 async function setSlide(min, max) {
-  // Slider-Grenzen anwenden aber nicht kollidieren
-  const eMin = Math.round(Math.min(customDepthMin, customDepthMax - 10));
-  const eMax = Math.round(Math.max(customDepthMax, customDepthMin + 10));
+  const eMin = Math.max(0, Math.min(customDepthMin, customDepthMax - 10));
+  const eMax = Math.min(100, Math.max(customDepthMax, customDepthMin + 10));
   try { await handyRequest('/slide', 'PUT', { min: eMin, max: eMax }); } catch(e) {}
 }
 
-async function hampStart() { try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {} }
-async function hampStop() { 
+async function hampStart() {
+  try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {}
+}
+
+async function hampStop() {
   try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
 }
 
@@ -560,9 +563,11 @@ async function runScript(scriptId) {
   activeEl.classList.add('running');
   document.getElementById('liveCard').classList.add('running');
 
-  await handyRequest('/mode', 'PUT', { mode: 2 });
+  // Korrekte Reihenfolge: Slide → Mode → Start → Velocity
   await setSlide(currentScript.strokeMin, currentScript.strokeMax);
+  await handyRequest('/mode', 'PUT', { mode: 2 });
   await hampStart();
+  await delay(300); // kurz warten bis Gerät läuft
   await setHampSpeed(currentScript.speed);
 
   showClaudeComment(currentScript.comments[0]);
@@ -607,7 +612,8 @@ function updateSpeed(val) {
   const v = parseInt(val);
   document.getElementById('speedVal').textContent = v + '%';
   speedMultiplier = v / 50;
-  if (isRunning && currentScript) {
+  // Velocity direkt senden wenn Gerät läuft und kein Custom Loop aktiv
+  if (isRunning && currentScript && !currentScript.useCustomLoop) {
     const effective = Math.min(100, Math.max(1, Math.round(currentScript.speed * speedMultiplier)));
     handyRequest('/hamp/velocity', 'PUT', { velocity: effective }).catch(()=>{});
   }
