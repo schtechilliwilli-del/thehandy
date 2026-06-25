@@ -706,28 +706,54 @@ function getRemoteStep() {
 }
 
 async function remotePlay() {
-  if (!isRunning) {
-    // Letztes Skript neu starten oder erstes
-    const id = currentScript?.id || SCRIPTS[0].id;
-    await runScript(id);
-  }
+  if (!connected) return;
+  if (isRunning) { await stopScript(false); }
+  // Eigener Remote-Modus: direkt starten ohne Skript
+  isRunning = true;
+  step = 0;
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('speedSlider').disabled = false;
+  document.getElementById('depthMaxSlider').disabled = false;
+  document.getElementById('depthMinSlider').disabled = false;
+  document.getElementById('activeScript').textContent = 'Fernbedienung';
+  document.getElementById('liveCard').classList.add('running');
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  await handyRequest('/mode', 'PUT', { mode: 2 });
+  const min = customDepthMin || 5;
+  const max = customDepthMax || 98;
+  await handyRequest('/slide', 'PUT', { min, max });
+  await hampStart();
+  const spd = Math.round((parseInt(document.getElementById('speedSlider').value) / 100) * 100);
+  await handyRequest('/hamp/velocity', 'PUT', { velocity: spd });
+  showClaudeComment('Fernbedienung aktiv.');
+  if (scriptInterval) clearInterval(scriptInterval);
+  scriptInterval = setInterval(() => {
+    step += 0.15;
+    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressText').textContent = Math.round(progress) + '%';
+  }, 200);
 }
 
-function remoteUp() {
+async function remoteUp() {
+  if (!connected) return;
   const step = getRemoteStep();
   const slider = document.getElementById('depthMinSlider');
   if (!slider) return;
   slider.value = Math.min(90, parseInt(slider.value) + step);
   updateDepthMin(slider.value);
+  if (isRunning) await handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax });
   showClaudeComment('Höher: ' + slider.value + '%');
 }
 
-function remoteDown() {
+async function remoteDown() {
+  if (!connected) return;
   const step = getRemoteStep();
   const slider = document.getElementById('depthMaxSlider');
   if (!slider) return;
   slider.value = Math.max(10, parseInt(slider.value) - step);
   updateDepthMax(slider.value);
+  if (isRunning) await handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax });
   showClaudeComment('Tiefer: ' + slider.value + '%');
 }
 
