@@ -674,10 +674,11 @@ async function runScript(scriptId) {
   document.getElementById('activeScript').textContent = currentScript.name;
   document.getElementById('liveCard').classList.add('running');
 
-  // Set speed
+  // Set speed - korrekte Reihenfolge für Handy API v2
   const speed = Math.min(100, Math.round(currentScript.speed * speedMultiplier));
-  await setHampSpeed(speed);
+  try { await handyRequest('/mode', 'PUT', { mode: 0 }); } catch(e) {} // HAMP mode
   await setSlide(currentScript.strokeMin, currentScript.strokeMax);
+  await setHampSpeed(speed);
   await hampStart();
 
   // Progress + comment loop
