@@ -534,7 +534,10 @@ async function setSlide(min, max) {
 }
 
 async function hampStart() { try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {} }
-async function hampStop() { try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {} }
+async function hampStop() { 
+  try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
+  try { await handyRequest('/mode', 'PUT', { mode: 0 }); } catch(e) {} // zurück zu BASE mode
+}
 
 // ─── Script Control ───────────────────────────────────────────────────────────
 async function runScript(scriptId) {
@@ -588,8 +591,10 @@ async function runScript(scriptId) {
 
 async function stopScript(showStopped = true) {
   isRunning = false;
+  currentScript = null;
   if (scriptInterval) { clearInterval(scriptInterval); scriptInterval = null; }
   await hampStop();
+  await hampStop(); // zweimal senden zur Sicherheit
   document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('btnStop').disabled = true;
   document.getElementById('speedSlider').disabled = true;
