@@ -577,49 +577,7 @@ async function sendCommand() {
   showClaudeComment('Unbekannt: "' + cmd + '"');
 }
 
-// ─── Spracheingabe ────────────────────────────────────────────────────────────
-let recognition = null;
-let micActive = false;
 
-function toggleMic() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Dein Browser unterstützt keine Spracheingabe. Bitte Chrome verwenden.');
-    return;
-  }
-  if (micActive) {
-    recognition?.stop();
-    return;
-  }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'de-DE';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  recognition.onstart = () => {
-    micActive = true;
-    document.getElementById('btnMic').classList.add('listening');
-    document.getElementById('btnMic').textContent = '🔴';
-  };
-
-  recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    document.getElementById('cmdInput').value = text;
-    sendCommand();
-  };
-
-  recognition.onerror = (e) => {
-    showClaudeComment('Mikrofon-Fehler: ' + e.error);
-  };
-
-  recognition.onend = () => {
-    micActive = false;
-    document.getElementById('btnMic').classList.remove('listening');
-    document.getElementById('btnMic').textContent = '🎤';
-  };
-
-  recognition.start();
-}
 
 
 // ─── Speech Recognition ───────────────────────────────────────────────────────
