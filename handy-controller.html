@@ -538,6 +538,25 @@ async function hampStart() {
 
 async function hampStop() {
   try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
+  try { await handyRequest('/hdsp/xpvp', 'PUT', { xp: 50, vp: 0, stopOnTarget: true }); } catch(e) {}
+}
+
+// HDSP: direkte Positionssteuerung mit Geschwindigkeit
+async function hdspMove(positionPercent, velocityPercent) {
+  if (!isRunning) return;
+  const sliderVal = parseInt(document.getElementById('speedSlider').value);
+  const effectiveVel = Math.min(100, Math.max(1, Math.round(velocityPercent * (sliderVal / 50))));
+  try { 
+    await handyRequest('/hdsp/xpvp', 'PUT', { 
+      xp: Math.round(positionPercent), 
+      vp: effectiveVel,
+      stopOnTarget: false
+    }); 
+  } catch(e) {}
+}
+
+async function hdspStart() {
+  await handyRequest('/mode', 'PUT', { mode: 3 }); // HDSP = mode 3
 }
 
 // ─── Script Control ───────────────────────────────────────────────────────────
@@ -563,12 +582,18 @@ async function runScript(scriptId) {
   activeEl.classList.add('running');
   document.getElementById('liveCard').classList.add('running');
 
-  // Korrekte Reihenfolge: Slide → Mode → Start → Velocity
-  await setSlide(currentScript.strokeMin, currentScript.strokeMax);
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  await hampStart();
-  await delay(300); // kurz warten bis Gerät läuft
-  await setHampSpeed(currentScript.speed);
+  if (currentScript.useCustomLoop) {
+    // HDSP Modus für Custom Loops
+    await setSlide(currentScript.strokeMin, currentScript.strokeMax);
+    await handyRequest('/mode', 'PUT', { mode: 3 });
+  } else {
+    // HAMP Modus für normale Skripte
+    await setSlide(currentScript.strokeMin, currentScript.strokeMax);
+    await handyRequest('/mode', 'PUT', { mode: 2 });
+    await hampStart();
+    await delay(300);
+    await setHampSpeed(currentScript.speed);
+  }
 
   showClaudeComment(currentScript.comments[0]);
 
