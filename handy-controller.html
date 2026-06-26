@@ -388,24 +388,24 @@ const SCRIPTS = [
   },
   {
     id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis, tief & stabil',
-    depthMin: 0, depthMax: 35, startSpeed: 20,
+    depthMin: 0, depthMax: 30, startSpeed: 20,
     comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da. Genau da.', 'Bleib unten.', 'Steck ihn wieder rein.', 'Ganz tief rein.'],
     frames: [{t:0,p:0},{t:700,p:100},{t:1400,p:0},{t:2100,p:100},{t:2800,p:0},{t:3500,p:100},{t:4200,p:0}],
-    presets: [{speed:18, dMin:0,  dMax:30}, {speed:25, dMin:5,  dMax:40}, {speed:12, dMin:0,  dMax:25}, {speed:30, dMin:0,  dMax:35}]
+    presets: [{speed:18, dMin:0, dMax:28}, {speed:25, dMin:0, dMax:32}, {speed:12, dMin:0, dMax:22}, {speed:30, dMin:0, dMax:30}]
   },
   {
     id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mitte, rhythmisch',
-    depthMin: 25, depthMax: 75, startSpeed: 25,
+    depthMin: 20, depthMax: 65, startSpeed: 25,
     comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.', 'Nicht hetzen.', 'Kontrolliert.', 'Ja, so.', 'Weiter.'],
     frames: [{t:0,p:100},{t:800,p:0},{t:1600,p:100},{t:2400,p:0},{t:3200,p:100},{t:4000,p:0},{t:4800,p:100}],
-    presets: [{speed:22, dMin:25, dMax:70}, {speed:30, dMin:30, dMax:75}, {speed:18, dMin:20, dMax:65}, {speed:35, dMin:25, dMax:80}]
+    presets: [{speed:22, dMin:20, dMax:65}, {speed:30, dMin:25, dMax:68}, {speed:18, dMin:15, dMax:60}, {speed:35, dMin:22, dMax:70}]
   },
   {
     id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze',
-    depthMin: 50, depthMax: 100, startSpeed: 30,
+    depthMin: 60, depthMax: 100, startSpeed: 30,
     comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.', 'Nicht nachgeben.', 'Fast.', 'Nur oben.', 'Bleib.'],
     frames: [{t:0,p:100},{t:600,p:0},{t:1200,p:100},{t:1800,p:0},{t:2400,p:100},{t:3000,p:0},{t:3600,p:100}],
-    presets: [{speed:28, dMin:50, dMax:100}, {speed:35, dMin:55, dMax:100}, {speed:20, dMin:50, dMax:95}, {speed:40, dMin:60, dMax:100}]
+    presets: [{speed:28, dMin:62, dMax:100}, {speed:35, dMin:65, dMax:100}, {speed:20, dMin:60, dMax:98}, {speed:40, dMin:68, dMax:100}]
   },
   {
     id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Voller Hub, ruhig',
@@ -429,11 +429,11 @@ const SCRIPTS = [
     presets: [{speed:38, dMin:0,  dMax:100}, {speed:28, dMin:0,  dMax:95}, {speed:45, dMin:5,  dMax:100}, {speed:32, dMin:0,  dMax:90}]
   },
   {
-    id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Schnell runter, langsam hoch oben',
+    id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Blitzschnell runter – quälend langsam hoch',
     depthMin: 0, depthMax: 100, startSpeed: 45,
-    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Weiter so.', 'Ja so.', 'Nicht stoppen.'],
-    frames: [{t:0,p:50},{t:400,p:0},{t:3600,p:50},{t:4000,p:0},{t:7200,p:50},{t:7600,p:0},{t:10800,p:50}],
-    presets: [{speed:40, dMin:0,  dMax:100}, {speed:50, dMin:5,  dMax:95}, {speed:32, dMin:0,  dMax:100}, {speed:55, dMin:0,  dMax:95}]
+    comments: ['Ganz runter.', 'Langsam hoch.', 'Reit es.', 'Nicht hetzen.', 'Spür jeden Millimeter.', 'Ganz unten bleiben.', 'Jetzt hoch – ganz langsam.', 'Du kannst nicht entkommen.', 'Immer tiefer.', 'Noch langsamer.'],
+    frames: null,
+    presets: [{speed:45, dMin:0, dMax:100}, {speed:50, dMin:0, dMax:90}, {speed:40, dMin:0, dMax:95}, {speed:55, dMin:0, dMax:100}]
   },
   {
     id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
@@ -973,17 +973,35 @@ async function startRhythm(scriptId) {
     }
 
     case 'squat_ride': {
-      // Schnell runter, langsam hoch – simuliert über Velocity
+      // Blitzschnell runter (max speed), quälend langsam hoch (min speed)
+      // Obere Grenze variiert zufällig – aber immer bis 0% runter
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
-        await applyVelocity(randSpeed()); // schnell
+
+        const mx = getSpeedMax();
+        const mn = getSpeedMin();
+        // Obere Grenze zufällig zwischen 70% und 100%
+        const topPos = Math.round(70 + Math.random() * 30);
+        const dMin = parseInt(document.getElementById('depthMinSlider').value);
+
+        // ── Phase 1: Blitzschnell nach unten (0%) ──
+        await api('/slide', 'PUT', { min: 0, max: topPos });
+        await api('/hamp/velocity', 'PUT', { velocity: mx });
+        // Warten bis Gerät unten ist – abhängig von Speed
+        const downMs = Math.round(1200 * (50 / Math.max(mx, 10)));
         rhythmTimeout = setTimeout(async () => {
           if (!isPlaying || currentScriptId !== scriptId) return;
-          await applyVelocity(randSpeed()); // langsam
-          rhythmTimeout = setTimeout(run, 2400 + Math.random() * 600);
-        }, 500);
+
+          // ── Phase 2: Quälend langsam nach oben ──
+          // Slow speed = speedMin, aber mindestens 5%
+          const slowSpeed = Math.max(5, mn);
+          await api('/hamp/velocity', 'PUT', { velocity: slowSpeed });
+          // Wartezeit bis oben: je langsamer desto länger
+          const upMs = Math.round(3000 + (50 / Math.max(slowSpeed, 5)) * 1500 + Math.random() * 1000);
+          rhythmTimeout = setTimeout(run, upMs);
+        }, downMs);
       };
-      rhythmTimeout = setTimeout(run, 800);
+      rhythmTimeout = setTimeout(run, 600);
       break;
     }
 
