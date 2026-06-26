@@ -509,6 +509,189 @@ async function playScript(scriptId) {
 
   // Progress Animation
   startProgress();
+  startRhythm(scriptId);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// RHYTHMUS ENGINE
+// ═══════════════════════════════════════════════════════════
+let rhythmTimeout = null;
+
+function stopRhythm() {
+  if (rhythmTimeout) { clearTimeout(rhythmTimeout); rhythmTimeout = null; }
+}
+
+async function applyVelocity(v) {
+  if (!isPlaying) return;
+  await api('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.max(5, Math.round(v))) });
+}
+
+function getSpeedBase() {
+  return parseInt(document.getElementById('speedSlider').value);
+}
+
+// Rhythmus-Muster pro Skript
+async function startRhythm(scriptId) {
+  stopRhythm();
+  if (!isPlaying) return;
+
+  const base = getSpeedBase();
+
+  switch(scriptId) {
+
+    case 'pronebone': {
+      // Langsam, dann kurz schneller, wieder langsam
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        const r = Math.random();
+        if (r < 0.3) {
+          await applyVelocity(base * 2.2); // kurz schneller
+          rhythmTimeout = setTimeout(async () => {
+            await applyVelocity(base);
+            rhythmTimeout = setTimeout(run, 3000 + Math.random() * 4000);
+          }, 600 + Math.random() * 800);
+        } else {
+          await applyVelocity(base * (0.8 + Math.random() * 0.4));
+          rhythmTimeout = setTimeout(run, 2500 + Math.random() * 3000);
+        }
+      };
+      rhythmTimeout = setTimeout(run, 2000);
+      break;
+    }
+
+    case 'edging_wurzel':
+    case 'edging_stamm':
+    case 'edging_top': {
+      // Gleichmäßig mit gelegentlichen kurzen Beschleunigungen
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        const r = Math.random();
+        if (r < 0.25) {
+          await applyVelocity(base * 1.8);
+          rhythmTimeout = setTimeout(async () => {
+            await applyVelocity(base);
+            rhythmTimeout = setTimeout(run, 2000 + Math.random() * 3000);
+          }, 500);
+        } else {
+          await applyVelocity(base * (0.9 + Math.random() * 0.2));
+          rhythmTimeout = setTimeout(run, 1500 + Math.random() * 2500);
+        }
+      };
+      rhythmTimeout = setTimeout(run, 1500);
+      break;
+    }
+
+    case 'keep_riding': {
+      // Gleichmäßig, sehr selten Variationen
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        await applyVelocity(base * (0.85 + Math.random() * 0.3));
+        rhythmTimeout = setTimeout(run, 3000 + Math.random() * 4000);
+      };
+      rhythmTimeout = setTimeout(run, 2000);
+      break;
+    }
+
+    case 'deepthroat': {
+      // Schnell, mit kurzen Pausen (fast Stop)
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        const r = Math.random();
+        if (r < 0.2) {
+          // Kurze Pause
+          await applyVelocity(8);
+          rhythmTimeout = setTimeout(async () => {
+            await applyVelocity(base);
+            rhythmTimeout = setTimeout(run, 1500 + Math.random() * 2000);
+          }, 400 + Math.random() * 600);
+        } else {
+          await applyVelocity(base * (0.8 + Math.random() * 0.5));
+          rhythmTimeout = setTimeout(run, 800 + Math.random() * 1500);
+        }
+      };
+      rhythmTimeout = setTimeout(run, 1000);
+      break;
+    }
+
+    case 'deep_seeding': {
+      // Immer wieder kurz schnell dann langsam
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        await applyVelocity(base * 2.5); // schnell
+        rhythmTimeout = setTimeout(async () => {
+          if (!isPlaying || currentScriptId !== scriptId) return;
+          await applyVelocity(base * 0.3); // langsam
+          rhythmTimeout = setTimeout(run, 2500 + Math.random() * 2000);
+        }, 400 + Math.random() * 400);
+      };
+      rhythmTimeout = setTimeout(run, 1000);
+      break;
+    }
+
+    case 'squat_ride': {
+      // Schnell runter, langsam hoch – simuliert über Velocity
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        await applyVelocity(base * 2.8); // schnell
+        rhythmTimeout = setTimeout(async () => {
+          if (!isPlaying || currentScriptId !== scriptId) return;
+          await applyVelocity(base * 0.4); // langsam
+          rhythmTimeout = setTimeout(run, 2800 + Math.random() * 1500);
+        }, 500);
+      };
+      rhythmTimeout = setTimeout(run, 800);
+      break;
+    }
+
+    case 'milking_hard': {
+      // Zufallsmix: schnell, Pause, halb, voll
+      const pauseMs = parseInt(document.getElementById('pauseSlider').value) * 1000;
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        const r = Math.random();
+        if (r < 0.3) {
+          // Pause
+          await applyVelocity(5);
+          rhythmTimeout = setTimeout(async () => {
+            await applyVelocity(base);
+            rhythmTimeout = setTimeout(run, 800 + Math.random() * 1000);
+          }, pauseMs);
+        } else if (r < 0.6) {
+          await applyVelocity(base * 1.6);
+          rhythmTimeout = setTimeout(run, 600 + Math.random() * 800);
+        } else {
+          await applyVelocity(base * (0.7 + Math.random() * 0.6));
+          rhythmTimeout = setTimeout(run, 500 + Math.random() * 1000);
+        }
+      };
+      rhythmTimeout = setTimeout(run, 500);
+      break;
+    }
+
+    case 'ich_komme': {
+      // Sehr langsam, gelegentlich kurz schnell
+      const run = async () => {
+        if (!isPlaying || currentScriptId !== scriptId) return;
+        const r = Math.random();
+        if (r < 0.2) {
+          await applyVelocity(base * 3);
+          rhythmTimeout = setTimeout(async () => {
+            await applyVelocity(base * 0.4);
+            rhythmTimeout = setTimeout(run, 4000 + Math.random() * 3000);
+          }, 300);
+        } else {
+          await applyVelocity(base * (0.3 + Math.random() * 0.3));
+          rhythmTimeout = setTimeout(run, 3500 + Math.random() * 3000);
+        }
+      };
+      rhythmTimeout = setTimeout(run, 1500);
+      break;
+    }
+
+    default:
+      break;
+  }
 }
 
 async function stopAll(showMsg = true) {
@@ -517,6 +700,7 @@ async function stopAll(showMsg = true) {
   currentScriptId = null;
 
   // Alle Timer stoppen
+  stopRhythm();
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
   if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
   if (ohGottTimer) { clearTimeout(ohGottTimer); ohGottTimer = null; }
