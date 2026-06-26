@@ -120,6 +120,23 @@
   <div class="scripts-grid" id="scriptsGrid"></div>
 </div>
 
+<!-- Pause Timer -->
+<div class="card" id="pauseTimerCard" style="display:none">
+  <div class="card-title">▸ Pause-Timer (Milking Hard)</div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+    <span style="font-size:0.75rem;color:var(--muted);font-family:'Space Mono',monospace;width:80px;flex-shrink:0">Pause</span>
+    <input type="range" id="pauseDurationSlider" min="1" max="10" value="3" oninput="document.getElementById('pauseDurationVal').textContent=this.value+'s'" style="flex:1" />
+    <span id="pauseDurationVal" style="font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--accent);width:36px;text-align:right">3s</span>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="setPauseDuration(1)" class="btn-story-style">1s</button>
+    <button onclick="setPauseDuration(2)" class="btn-story-style">2s</button>
+    <button onclick="setPauseDuration(3)" class="btn-story-style">3s</button>
+    <button onclick="setPauseDuration(5)" class="btn-story-style">5s</button>
+    <button onclick="setPauseDuration(8)" class="btn-story-style">8s</button>
+  </div>
+</div>
+
 <!-- Live Control -->
 <div class="card" id="liveCard">
   <div class="card-title">▸ Live-Steuerung</div>
@@ -272,7 +289,7 @@ const SCRIPTS = [
     speed: 30,
     strokeMin: 65,
     strokeMax: 95,
-    comments: ['Nur oben. Ganz präzise.','Bleib im Bereich.','Die Spannung baut sich auf.','Noch nicht. Warte.']
+    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.']
   },
   {
     id: 'edging_wurzel',
@@ -282,7 +299,7 @@ const SCRIPTS = [
     speed: 25,
     strokeMin: 5,
     strokeMax: 35,
-    comments: ['Tief unten.','Druckpunkt gefunden.','Wurzel. Stabilität.','Langsam. Tiefer.']
+    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.']
   },
   {
     id: 'edging_stamm',
@@ -292,7 +309,7 @@ const SCRIPTS = [
     speed: 30,
     strokeMin: 30,
     strokeMax: 70,
-    comments: ['Der Stamm – Kontrolle.','Rhythmisch. Gleichmäßig.','Keine Extreme.','Hier liegt die Ausdauer.']
+    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte. Kontrolle.', 'Ausdauer.', 'Bewusst.']
   },
   {
     id: 'deepthroat',
@@ -302,7 +319,7 @@ const SCRIPTS = [
     speed: 75,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Voller Weg.','Kein Zentimeter gespart.','Tief. Vollständig.','Bis ganz nach unten.']
+    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.']
   },
   {
     id: 'milking_hard',
@@ -312,7 +329,7 @@ const SCRIPTS = [
     speed: 40,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Kein Halten mehr.','Schnell. Dann Pause.','Lass es passieren.','Der Rhythmus übernimmt.']
+    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.']
   },
   {
     id: 'deep_seeding',
@@ -322,7 +339,7 @@ const SCRIPTS = [
     speed: 35,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Schnell tief hinein.','Langsam zurück.','Wellen. Unvermeidlich.','Gib nach.']
+    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.']
   },
   {
     id: 'ich_komme',
@@ -342,7 +359,7 @@ const SCRIPTS = [
     speed: 25,
     strokeMin: 78,
     strokeMax: 98,
-    comments: ['Oben bleiben.', 'Nur der obere Bereich.', 'Dein Tempo.', 'Bleib dran.']
+    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.']
   },
   {
     id: 'keep_riding',
@@ -352,7 +369,7 @@ const SCRIPTS = [
     speed: 10,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Lass es kommen.','Ganz langsam. Tief.','Jede Bewegung zählt.','Ja.']
+    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.']
   }
 ];
 
@@ -603,7 +620,7 @@ async function runScript(scriptId) {
     const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
     document.getElementById('progressBar').style.width = progress + '%';
     document.getElementById('progressText').textContent = Math.round(progress) + '%';
-    const newIdx = Math.floor(step / 8) % currentScript.comments.length;
+    const newIdx = Math.floor(step / 20) % currentScript.comments.length;
     if (newIdx !== commentIdx) { commentIdx = newIdx; showClaudeComment(currentScript.comments[commentIdx]); }
   }, 200);
 }
@@ -633,11 +650,9 @@ function updateSpeed(val) {
     const effective = Math.min(100, Math.max(1, Math.round(base * speedMultiplier)));
     handyRequest('/hamp/velocity', 'PUT', { velocity: effective }).catch(()=>{});
   }
-  // Dynamischer Text
-  if (v <= 20) showClaudeComment('Schön langsam…');
-  else if (v <= 40) showClaudeComment('Ruhig und gleichmäßig.');
-  else if (v >= 85) showClaudeComment('Volle Kraft!');
-  else if (v >= 70) showClaudeComment('Schneller!');
+  // Dynamischer Text nur bei Extremen
+  if (v <= 15) showClaudeComment('Ganz langsam…');
+  else if (v >= 90) showClaudeComment('Volle Kraft!');
 }
 
 let customDepthMax = 98;
@@ -955,6 +970,18 @@ async function startCountdown(minutes) {
       showHappyEnd();
     }
   }, 1000);
+}
+
+
+// ─── Pause Timer ──────────────────────────────────────────────────────────────
+function setPauseDuration(sec) {
+  document.getElementById('pauseDurationSlider').value = sec;
+  document.getElementById('pauseDurationVal').textContent = sec + 's';
+  showClaudeComment('Pause: ' + sec + ' Sekunden eingestellt.');
+}
+
+function getPauseDuration() {
+  return parseInt(document.getElementById('pauseDurationSlider').value) * 1000;
 }
 
 // ─── Gamification ─────────────────────────────────────────────────────────────
