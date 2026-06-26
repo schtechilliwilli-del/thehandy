@@ -24,7 +24,7 @@
   input[type="text"]:focus { border-color: var(--accent); }
   .btn-connect { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 10px; padding: 10px 18px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
   .btn-connect:hover { opacity: 0.85; } .btn-connect:disabled { opacity: 0.4; cursor: not-allowed; }
-  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 8px; transition: background 0.3s; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 8px; }
   .status-dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
   .status-dot.error { background: var(--danger); }
   .status-text { font-size: 0.8rem; color: var(--muted); margin-top: 10px; display: flex; align-items: center; }
@@ -39,44 +39,36 @@
   .controls-row { display: flex; gap: 10px; margin-bottom: 14px; }
   .btn-stop { flex: 1; background: rgba(248,113,113,0.1); border: 1px solid var(--danger); border-radius: 12px; padding: 12px; color: var(--danger); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
   .btn-stop:hover { background: rgba(248,113,113,0.2); } .btn-stop:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-ohgott { background: rgba(129,140,248,0.1); border: 1px solid var(--accent2); border-radius: 12px; padding: 12px 16px; color: var(--accent2); font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-ohgott:disabled { opacity: 0.3; cursor: not-allowed; }
   .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .slider-label { font-size: 0.75rem; color: var(--muted); font-family: 'Space Mono', monospace; width: 80px; flex-shrink: 0; }
   input[type="range"] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 8px var(--glow); }
   .slider-val { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--accent); width: 42px; text-align: right; }
+  .active-label { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
+  .active-label.running { text-shadow: 0 0 12px var(--accent); }
   .progress-wrap { background: var(--bg); border-radius: 8px; height: 6px; overflow: hidden; margin-bottom: 10px; }
-  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 8px; transition: width 0.5s ease; width: 0%; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 8px; width: 0%; transition: width 0.3s; }
   .progress-info { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-bottom: 14px; }
-  #activeScript { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
-  #activeScript.running { text-shadow: 0 0 12px var(--accent); }
   .claude-box { background: var(--bg); border-left: 2px solid var(--accent); border-radius: 0 10px 10px 0; padding: 16px 18px; font-size: 1.15rem; line-height: 1.7; color: var(--text); min-height: 70px; font-style: italic; position: relative; }
   .claude-box::before { content: 'KI'; position: absolute; top: -8px; left: 12px; background: var(--accent); color: #fff; font-size: 0.6rem; font-family: 'Space Mono', monospace; padding: 1px 6px; border-radius: 4px; font-style: normal; font-weight: 700; letter-spacing: 0.1em; }
+  .timer-inline { font-family: 'Space Mono', monospace; font-size: 1.4rem; color: var(--accent); text-align: center; margin-top: 10px; display: none; }
+  .phase-inline { text-align: center; font-size: 0.75rem; color: var(--accent); font-family: 'Space Mono', monospace; margin-top: 4px; letter-spacing: 0.1em; display: none; }
+  .btn-skip { width: 100%; margin-top: 8px; background: rgba(129,140,248,0.1); border: 1px solid var(--accent2); border-radius: 10px; padding: 9px; color: var(--accent2); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: none; }
   .typing-cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent); margin-left: 2px; vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
-  .voice-row { display: flex; gap: 8px; align-items: center; }
-  .voice-input { flex: 1; }
-  .btn-send { background: var(--border); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); cursor: pointer; font-size: 1rem; transition: all 0.2s; }
-  .btn-send:hover { border-color: var(--accent); background: var(--glow); }
-
-  .btn-mic { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--muted); cursor: pointer; font-size: 1.1rem; transition: all 0.2s; }
-  .btn-mic.active { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 12px rgba(248,113,113,0.3); animation: mic-pulse 1.5s ease-in-out infinite; }
-  @keyframes mic-pulse { 0%,100% { box-shadow: 0 0 8px rgba(248,113,113,0.3); } 50% { box-shadow: 0 0 20px rgba(248,113,113,0.6); } }
-
-
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 0 0 var(--glow); } 50% { box-shadow: 0 0 20px 4px var(--glow); } }
   .card.running { animation: pulse-glow 2s ease-in-out infinite; }
-  
-
-
-  /* Remote Control */
+  /* Remote */
   .remote-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .btn-remote { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 8px; cursor: pointer; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; text-align: center; }
+  .btn-remote { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 8px; cursor: pointer; color: var(--text); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; text-align: center; }
   .btn-remote:active { transform: scale(0.95); background: var(--glow); border-color: var(--accent); }
   .btn-remote:disabled { opacity: 0.3; cursor: not-allowed; }
   .btn-remote .r-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
   .btn-remote.danger { border-color: var(--danger); color: var(--danger); }
   .btn-remote.accent { border-color: var(--accent); color: var(--accent); }
-  /* Gamification / Timer / Challenge */
+  /* Modi */
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .btn-feature { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; cursor: pointer; transition: all 0.2s; text-align: left; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
   .btn-feature:hover:not(:disabled) { border-color: var(--accent); background: var(--glow); }
@@ -84,14 +76,20 @@
   .btn-feature .f-icon { font-size: 1.3rem; display: block; margin-bottom: 6px; }
   .btn-feature .f-name { font-weight: 600; font-size: 0.88rem; display: block; margin-bottom: 3px; }
   .btn-feature .f-desc { font-size: 0.72rem; color: var(--muted); }
-  .timer-display { font-family: 'Space Mono', monospace; font-size: 2rem; color: var(--accent); text-align: center; padding: 10px; }
-  .score-display { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 6px; }
-
-
-  .btn-tts { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
-  .btn-tts.active { border-color: var(--success); color: var(--success); }
-  .btn-tts:hover { border-color: var(--accent); color: var(--text); }
-
+  /* Pause Timer */
+  .pause-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .btn-pause-quick { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+  .btn-pause-quick:hover { border-color: var(--accent); color: var(--text); }
+  /* Voice */
+  .voice-row { display: flex; gap: 8px; align-items: center; }
+  .voice-input { flex: 1; }
+  .btn-send { background: var(--border); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+  .btn-send:hover { border-color: var(--accent); background: var(--glow); }
+  .btn-mic { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--muted); cursor: pointer; font-size: 1.1rem; transition: all 0.2s; }
+  .btn-mic.active { border-color: var(--danger); color: var(--danger); animation: pulse-glow 1.5s ease-in-out infinite; }
+  /* Happy End */
+  #happyEndCard { display: none; border-color: var(--accent); }
+  .btn-happy { border-radius: 12px; padding: 14px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -120,115 +118,93 @@
   <div class="scripts-grid" id="scriptsGrid"></div>
 </div>
 
-<!-- Pause Timer -->
-<div class="card" id="pauseTimerCard" style="display:none">
-  <div class="card-title">▸ Pause-Timer (Milking Hard)</div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-    <span style="font-size:0.75rem;color:var(--muted);font-family:'Space Mono',monospace;width:80px;flex-shrink:0">Pause</span>
-    <input type="range" id="pauseDurationSlider" min="1" max="10" value="3" oninput="document.getElementById('pauseDurationVal').textContent=this.value+'s'" style="flex:1" />
-    <span id="pauseDurationVal" style="font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--accent);width:36px;text-align:right">3s</span>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <button onclick="setPauseDuration(1)" class="btn-story-style">1s</button>
-    <button onclick="setPauseDuration(2)" class="btn-story-style">2s</button>
-    <button onclick="setPauseDuration(3)" class="btn-story-style">3s</button>
-    <button onclick="setPauseDuration(5)" class="btn-story-style">5s</button>
-    <button onclick="setPauseDuration(8)" class="btn-story-style">8s</button>
-  </div>
-</div>
-
 <!-- Live Control -->
 <div class="card" id="liveCard">
   <div class="card-title">▸ Live-Steuerung</div>
   <div class="controls-row">
-    <button class="btn-stop" id="btnStop" onclick="stopScript()" disabled>⏹ Stop</button>
-    <button id="btnOhGott" onclick="ohGott()" disabled style="background:rgba(129,140,248,0.1);border:1px solid var(--accent2);border-radius:12px;padding:12px 16px;color:var(--accent2);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;">💦 Oh Gott</button>
+    <button class="btn-stop" id="btnStop" onclick="stopAll()" disabled>⏹ Stop</button>
+    <button class="btn-ohgott" id="btnOhGott" onclick="runOhGott()" disabled>💦 Oh Gott</button>
   </div>
   <div class="slider-row">
     <span class="slider-label">Geschw.</span>
-    <input type="range" id="speedSlider" min="0" max="100" value="50" oninput="updateSpeed(this.value)" disabled />
+    <input type="range" id="speedSlider" min="10" max="100" value="50" oninput="onSpeedChange(this.value)" disabled />
     <span class="slider-val" id="speedVal">50%</span>
   </div>
   <div class="slider-row">
     <span class="slider-label">Max Tiefe</span>
-    <input type="range" id="depthMaxSlider" min="10" max="100" value="98" oninput="updateDepthMax(this.value)" disabled />
-    <span class="slider-val" id="depthMaxVal">98%</span>
+    <input type="range" id="depthMaxSlider" min="20" max="100" value="95" oninput="onDepthChange()" disabled />
+    <span class="slider-val" id="depthMaxVal">95%</span>
   </div>
   <div class="slider-row">
     <span class="slider-label">Max Höhe</span>
-    <input type="range" id="depthMinSlider" min="0" max="90" value="5" oninput="updateDepthMin(this.value)" disabled />
+    <input type="range" id="depthMinSlider" min="0" max="80" value="5" oninput="onDepthChange()" disabled />
     <span class="slider-val" id="depthMinVal">5%</span>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-bar" id="progressBar"></div>
-  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress-info">
-    <span id="activeScript">Kein Skript aktiv</span>
-    <span id="progressText">–</span>
+    <span class="active-label" id="activeScript">Kein Skript aktiv</span>
+    <span id="progressText" style="font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted)">–</span>
   </div>
   <div class="claude-box" id="claudeComment">Wähle ein Skript und verbinde dein Gerät.</div>
+  <div class="timer-inline" id="timerInline"></div>
+  <div class="phase-inline" id="phaseInline"></div>
+  <button class="btn-skip" id="btnSkip" onclick="skipPhase()">⏭ Phase überspringen</button>
 </div>
 
+<!-- Pause Timer (Milking Hard) -->
+<div class="card" id="pauseCard" style="display:none">
+  <div class="card-title">▸ Pause-Dauer (Milking Hard)</div>
+  <div class="slider-row">
+    <span class="slider-label">Pause</span>
+    <input type="range" id="pauseSlider" min="1" max="10" value="3" oninput="document.getElementById('pauseVal').textContent=this.value+'s'" />
+    <span class="slider-val" id="pauseVal">3s</span>
+  </div>
+  <div class="pause-btns">
+    <button class="btn-pause-quick" onclick="setPause(1)">1s</button>
+    <button class="btn-pause-quick" onclick="setPause(2)">2s</button>
+    <button class="btn-pause-quick" onclick="setPause(3)">3s</button>
+    <button class="btn-pause-quick" onclick="setPause(5)">5s</button>
+    <button class="btn-pause-quick" onclick="setPause(8)">8s</button>
+  </div>
+</div>
 
-
-<!-- Remote -->
+<!-- Fernbedienung -->
 <div class="card">
   <div class="card-title">▸ Fernbedienung</div>
   <div class="remote-grid">
-    <button class="btn-remote" id="rUp" onclick="remoteUp()" disabled>
-      <span class="r-icon">⬆️</span>Höher
-    </button>
-    <button class="btn-remote accent" id="rPlay" onclick="remotePlay()" disabled>
-      <span class="r-icon">▶️</span>Start
-    </button>
-    <button class="btn-remote" id="rDown" onclick="remoteDown()" disabled>
-      <span class="r-icon">⬇️</span>Tiefer
-    </button>
-    <button class="btn-remote" id="rSlower" onclick="remoteSlower()" disabled>
-      <span class="r-icon">🐢</span>Langsam
-    </button>
-    <button class="btn-remote danger" id="rStop" onclick="stopScript()" disabled>
-      <span class="r-icon">⏹️</span>Stop
-    </button>
-    <button class="btn-remote" id="rFaster" onclick="remoteFaster()" disabled>
-      <span class="r-icon">⚡</span>Schnell
-    </button>
+    <button class="btn-remote" id="rUp" onclick="remoteAdjust('up')" disabled><span class="r-icon">⬆️</span>Höher</button>
+    <button class="btn-remote accent" id="rPlay" onclick="remotePlay()" disabled><span class="r-icon">▶️</span>Start</button>
+    <button class="btn-remote" id="rDown" onclick="remoteAdjust('down')" disabled><span class="r-icon">⬇️</span>Tiefer</button>
+    <button class="btn-remote" id="rSlower" onclick="remoteAdjust('slower')" disabled><span class="r-icon">🐢</span>Langsam</button>
+    <button class="btn-remote danger" onclick="stopAll()" id="rStop" disabled><span class="r-icon">⏹️</span>Stop</button>
+    <button class="btn-remote" id="rFaster" onclick="remoteAdjust('faster')" disabled><span class="r-icon">⚡</span>Schnell</button>
   </div>
   <div class="slider-row" style="margin-bottom:0">
     <span class="slider-label" style="width:60px">Schritt</span>
-    <input type="range" id="remoteStep" min="5" max="30" value="10" style="flex:1" />
-    <span class="slider-val" id="remoteStepVal">10%</span>
+    <input type="range" id="stepSlider" min="5" max="30" value="10" oninput="document.getElementById('stepVal').textContent=this.value+'%'" />
+    <span class="slider-val" id="stepVal">10%</span>
   </div>
 </div>
 
-<!-- Features -->
+<!-- Modi -->
 <div class="card">
   <div class="card-title">▸ Modi</div>
   <div class="feature-grid">
-    <button class="btn-feature" id="btnChallenge" onclick="startChallenge()" disabled>
-      <span class="f-icon">🏆</span>
-      <span class="f-name">Ausdauer</span>
-      <span class="f-desc">Wie lange hältst du durch?</span>
+    <button class="btn-feature" id="btnChallenge" onclick="toggleChallenge()" disabled>
+      <span class="f-icon">🏆</span><span class="f-name">Ausdauer</span><span class="f-desc">Wie lange hältst du durch?</span>
     </button>
-    <button class="btn-feature" id="btnRandom" onclick="startRandom()" disabled>
-      <span class="f-icon">🎲</span>
-      <span class="f-name">Zufall</span>
-      <span class="f-desc">Skript wechselt zufällig</span>
+    <button class="btn-feature" id="btnRandom" onclick="toggleRandom()" disabled>
+      <span class="f-icon">🎲</span><span class="f-name">Zufall</span><span class="f-desc">Skript wechselt zufällig</span>
     </button>
-    <button class="btn-feature" id="btnTimer" onclick="startTimer()" disabled>
-      <span class="f-icon">⏱</span>
-      <span class="f-name">Timer</span>
-      <span class="f-desc">5min Edging-Zyklus</span>
+    <button class="btn-feature" id="btnTimer" onclick="toggleTimer()" disabled>
+      <span class="f-icon">⏱</span><span class="f-name">Timer</span><span class="f-desc">5min Edging-Zyklus</span>
     </button>
     <button class="btn-feature" id="btnCountdown" onclick="showCountdownPicker()" disabled>
-      <span class="f-icon">🚀</span>
-      <span class="f-name">Countdown</span>
-      <span class="f-desc">Aufbau bis zum Ziel</span>
+      <span class="f-icon">🚀</span><span class="f-name">Countdown</span><span class="f-desc">Aufbau bis zum Ziel</span>
     </button>
   </div>
-  <div class="timer-display" id="timerDisplay" style="display:none">00:00</div>
-  <div id="countdownPicker" style="display:none;margin-top:10px;">
-    <div style="font-size:0.75rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">DAUER WÄHLEN</div>
+  <div id="countdownPicker" style="display:none;margin-top:4px;">
+    <div style="font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">DAUER WÄHLEN</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="startCountdown(5)" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);cursor:pointer;font-family:'Space Grotesk',sans-serif;">5 min</button>
       <button onclick="startCountdown(10)" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);cursor:pointer;font-family:'Space Grotesk',sans-serif;">10 min</button>
@@ -236,1017 +212,744 @@
       <button onclick="startCountdown(20)" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);cursor:pointer;font-family:'Space Grotesk',sans-serif;">20 min</button>
     </div>
   </div>
-  <div class="score-display" id="scoreDisplay"></div>
+  <div style="margin-top:10px;font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted)" id="challengeScore"></div>
 </div>
 
 <!-- Happy End -->
-<div id="happyEndCard" class="card" style="display:none;border-color:var(--accent);">
+<div class="card" id="happyEndCard">
   <div class="card-title">▸ Wie weiter?</div>
-  <div style="display:flex;flex-direction:column;gap:10px;">
-    <button onclick="happyEndChoice('harder')" style="background:rgba(192,132,252,0.1);border:1px solid var(--accent);border-radius:12px;padding:14px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1rem;cursor:pointer;">💪 Härter!</button>
-    <button onclick="happyEndChoice('ichkomme')" style="background:rgba(248,113,113,0.1);border:1px solid var(--danger);border-radius:12px;padding:14px;color:var(--danger);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1rem;cursor:pointer;">💥 Ich komme!</button>
-  </div>
+  <button class="btn-happy" onclick="happyChoice('harder')" style="background:rgba(192,132,252,0.1);border:1px solid var(--accent);color:var(--text);">💪 Härter!</button>
+  <button class="btn-happy" onclick="happyChoice('ichkomme')" style="background:rgba(248,113,113,0.1);border:1px solid var(--danger);color:var(--danger);">💥 Ich komme!</button>
 </div>
 
-<!-- Commands -->
+<!-- Befehl -->
 <div class="card">
   <div class="card-title">▸ Befehl</div>
   <div class="voice-row">
     <input type="text" id="cmdInput" class="voice-input" placeholder="schneller, langsamer, stop, skript-name…" onkeydown="if(event.key==='Enter')sendCommand()" />
     <button class="btn-send" onclick="sendCommand()">↵</button>
-    <button class="btn-mic" id="btnMic" onclick="toggleMic()" title="Spracherkennung">🎤</button>
+    <button class="btn-mic" id="btnMic" onclick="toggleMic()">🎤</button>
   </div>
 </div>
 
 <script>
-const HANDY_BASE = 'https://handy-proxy.stuerztobias.workers.dev';
+// ═══════════════════════════════════════════════════════════
+// KONFIGURATION
+// ═══════════════════════════════════════════════════════════
+const PROXY = 'https://handy-proxy.stuerztobias.workers.dev';
+const SCRIPT_SERVER = 'https://scripts01.handyfeeling.com/api/script/hosting/v0';
+
 let connectionKey = '';
 let connected = false;
-let currentScript = null;
-let scriptInterval = null;
-let customInterval = null;
-let step = 0;
-let speedMultiplier = 1.0;
-let isRunning = false;
+let currentScriptId = null;
+let isPlaying = false;
+let commentStep = 0;
+let commentTimer = null;
+let progressTimer = null;
+let timerInterval = null;
+let countdownInterval = null;
+let randomTimeout = null;
+let challengeInterval = null;
+let challengeSecs = 0;
+let highScore = parseInt(localStorage.getItem('hcHighScore') || '0');
+let micActive = false;
+let recognition = null;
+let ohGottActive = false;
+let ohGottTimer = null;
 
-// ─── Scripts ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// FUNSCRIPT DEFINITIONEN
+// Jedes Skript ist eine Liste von {t: ms, pos: 0-100}
+// ═══════════════════════════════════════════════════════════
 const SCRIPTS = [
   {
-    id: 'pronebone',
-    name: 'Pronebone',
-    useCustomLoop: true,
-    icon: '〰️',
-    desc: 'Langsam dann schnell tief',
-    speed: 15,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Langsam nach unten…','Ganz tief. Und halten.','Jetzt – schnell hinein.','Wieder langsam zurück.']
+    id: 'pronebone', name: 'Pronebone', icon: '〰️', desc: 'Langsam tief, schnell hoch',
+    comments: ['Tief und ruhig.', 'Lass dich fallen.', 'Kein Eilen.', 'Gleichmäßig.', 'Atme.', 'Nimm dir Zeit.'],
+    // Langsam runter (2.5s), kurz halten, schnell hoch (0.8s), langsam runter
+    frames: [{t:0,p:100},{t:2500,p:0},{t:3000,p:0},{t:3800,p:100},{t:6300,p:0},{t:6800,p:0},{t:7600,p:100},{t:10100,p:0}]
   },
   {
-    id: 'edging_top',
-    name: 'Edging Top',
-    icon: '▲',
-    desc: 'Nur die Spitze, präzise',
-    speed: 30,
-    strokeMin: 65,
-    strokeMax: 95,
-    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Nicht nachgeben.', 'Fast.', 'Konzentrier dich.']
+    id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze, präzise',
+    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.'],
+    frames: [{t:0,p:100},{t:600,p:70},{t:1200,p:100},{t:1800,p:70},{t:2400,p:100},{t:3000,p:70},{t:3600,p:100}]
   },
   {
-    id: 'edging_wurzel',
-    name: 'Edging Wurzel',
-    icon: '▼',
-    desc: 'Basis-Stimulation, tief',
-    speed: 25,
-    strokeMin: 5,
-    strokeMax: 35,
-    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da.', 'Bleib unten.']
+    id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis-Stimulation, tief',
+    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.'],
+    frames: [{t:0,p:0},{t:700,p:30},{t:1400,p:0},{t:2100,p:30},{t:2800,p:0},{t:3500,p:30},{t:4200,p:0}]
   },
   {
-    id: 'edging_stamm',
-    name: 'Edging Stamm',
-    icon: '◼',
-    desc: 'Mittlerer Bereich, rhythmisch',
-    speed: 30,
-    strokeMin: 30,
-    strokeMax: 70,
-    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Nicht hetzen.', 'Kontrolliert.', 'Im Takt.']
+    id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mittlerer Bereich, rhythmisch',
+    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.'],
+    frames: [{t:0,p:60},{t:800,p:30},{t:1600,p:60},{t:2400,p:30},{t:3200,p:60},{t:4000,p:30},{t:4800,p:60}]
   },
   {
-    id: 'deepthroat',
-    name: 'Deepthroat',
-    icon: '↕️',
-    desc: 'Voller Hub, tief und schnell',
-    speed: 75,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Vollständig.']
+    id: 'deepthroat', name: 'Deepthroat', icon: '↕️', desc: 'Voller Hub, tief und schnell',
+    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.'],
+    frames: [{t:0,p:100},{t:500,p:0},{t:1000,p:100},{t:1500,p:0},{t:2000,p:100},{t:2500,p:0},{t:3000,p:100}]
   },
   {
-    id: 'milking_hard',
-    name: 'Milking Hard',
-    useCustomLoop: true,
-    icon: '⚡',
-    desc: 'Zufälliger Mix, Pausen',
-    speed: 40,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.']
+    id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
+    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.'],
+    // Wird dynamisch mit Pausen generiert
+    frames: null
   },
   {
-    id: 'deep_seeding',
-    name: 'Deep Seeding',
-    useCustomLoop: true,
-    icon: '🌊',
-    desc: 'Schnell runter, langsam hoch',
-    speed: 35,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Und wieder.', 'Tiefer noch.', 'Keine Eile zurück.']
+    id: 'deep_seeding', name: 'Deep Seeding', icon: '🌊', desc: 'Schnell runter, langsam hoch',
+    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.'],
+    frames: [{t:0,p:100},{t:400,p:0},{t:3400,p:100},{t:3800,p:0},{t:6800,p:100},{t:7200,p:0},{t:10200,p:100}]
   },
   {
-    id: 'ich_komme',
-    name: 'Ich komme!',
-    useCustomLoop: true,
-    icon: '💥',
-    desc: 'Schnell runter, extrem langsam hoch',
-    speed: 95,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Jetzt.', 'Ganz runter.', 'Langsam zurück.', 'Noch einmal.']
+    id: 'ich_komme', name: 'Ich komme!', icon: '💥', desc: 'Schnell runter, extrem langsam hoch',
+    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Gib nach.'],
+    frames: [{t:0,p:100},{t:400,p:0},{t:5400,p:82},{t:5800,p:0},{t:10800,p:82},{t:11200,p:0},{t:16200,p:82}]
   },
   {
-    id: 'squat_ride',
-    name: 'Squat Ride',
-    useCustomLoop: true,
-    icon: '🏋️',
-    desc: 'Nur oben 80-100%, wählbar',
-    speed: 25,
-    strokeMin: 78,
-    strokeMax: 98,
-    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Ja.', 'Nicht stoppen.', 'Weiter so.']
+    id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Schnell runter, langsam hoch 80-100%',
+    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Weiter so.'],
+    frames: [{t:0,p:80},{t:400,p:0},{t:3600,p:80},{t:4000,p:0},{t:7200,p:80},{t:7600,p:0},{t:10800,p:80}]
   },
   {
-    id: 'keep_riding',
-    name: 'Keep Riding',
-    icon: '🔄',
-    desc: 'Langsam, tief, gleichmäßig',
-    speed: 10,
-    strokeMin: 5,
-    strokeMax: 98,
-    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Nicht aufhalten.', 'Gib nach.', 'Ja – jetzt.']
-  }
+    id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Langsam, tief, gleichmäßig',
+    comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.'],
+    frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}]
+  },
 ];
 
-// ─── Custom Loops ──────────────────────────────────────────────────────────────
+const COUNTDOWN_SEQ = [
+  {pct:0,  id:'pronebone'},
+  {pct:15, id:'edging_wurzel'},
+  {pct:30, id:'edging_stamm'},
+  {pct:45, id:'edging_top'},
+  {pct:58, id:'deepthroat'},
+  {pct:70, id:'deep_seeding'},
+  {pct:82, id:'milking_hard'},
+  {pct:92, id:'keep_riding'},
+  {pct:97, id:'ich_komme'},
+];
 
-// Pronebone: langsam runter → halten → schnell runter → langsam hoch → wiederholen
-async function proneboneLoop() {
-  const s = currentScript;
-  const min = Math.round(s.strokeMin);
-  const max = Math.round(s.strokeMax);
-  while (isRunning && currentScript?.id === 'pronebone') {
-    // Langsam runter
-    await setHampSpeed(4);
-    await setSlide(min, max);
-    await delay(2000);
-    if (!isRunning) break;
-    // Halten
-    await setSlide(min, min + 5);
-    await delay(800);
-    if (!isRunning) break;
-    // Schnell runter
-    await setHampSpeed(35);
-    await setSlide(min, max);
-    await delay(1200);
-    if (!isRunning) break;
-    // Langsam hoch
-    await setHampSpeed(4);
-    await setSlide(min, max);
-    await delay(2000);
-  }
-}
+const TIMER_PHASES = [
+  {name:'Edging Stamm', id:'edging_stamm', dur:120},
+  {name:'Pause',        id:null,           dur:20},
+  {name:'Edging Top',   id:'edging_top',   dur:90},
+  {name:'Pause',        id:null,           dur:20},
+  {name:'Deep Seeding', id:'deep_seeding', dur:60},
+  {name:'Pause',        id:null,           dur:30},
+  {name:'Milking Hard', id:'milking_hard', dur:60},
+];
 
-// Deep Seeding: schnell runter, langsam hoch
-async function deepSeedingLoop() {
-  const s = currentScript;
-  const min = Math.round(s.strokeMin);
-  const max = Math.round(s.strokeMax);
-  let fast = true;
-  while (isRunning && currentScript?.id === 'deep_seeding') {
-    if (fast) {
-      await setHampSpeed(40);
-      await setSlide(min, max);
-      await delay(600);
-    } else {
-      await setHampSpeed(5);
-      await setSlide(min, max);
-      await delay(2500);
+let timerPhaseIdx = 0;
+let timerSecsLeft = 0;
+let countdownTotal = 0;
+let countdownLeft = 0;
+
+// ═══════════════════════════════════════════════════════════
+// FUNSCRIPT GENERIERUNG
+// ═══════════════════════════════════════════════════════════
+function getFrames(scriptId) {
+  const s = SCRIPTS.find(x => x.id === scriptId);
+  if (!s) return null;
+
+  if (scriptId === 'milking_hard') {
+    // Dynamisch mit Pause
+    const pauseMs = parseInt(document.getElementById('pauseSlider').value) * 1000;
+    const frames = [];
+    let t = 0;
+    for (let i = 0; i < 6; i++) {
+      const r = Math.random();
+      if (r < 0.33) {
+        // Voller Hub + Pause
+        frames.push({t, p: 100}); t += 350;
+        frames.push({t, p: 0});   t += 350;
+        frames.push({t, p: 100}); t += 350;
+        frames.push({t, p: 0});   t += 350;
+        frames.push({t, p: 0});   t += pauseMs;
+      } else if (r < 0.66) {
+        // Obere Hälfte
+        frames.push({t, p: 100}); t += 350;
+        frames.push({t, p: 55});  t += 350;
+        frames.push({t, p: 100}); t += 350;
+        frames.push({t, p: 55});  t += 350;
+      } else {
+        // Untere Hälfte + kurze Pause
+        frames.push({t, p: 45});  t += 350;
+        frames.push({t, p: 0});   t += 350;
+        frames.push({t, p: 45});  t += 350;
+        frames.push({t, p: 0});   t += Math.round(pauseMs * 0.5);
+      }
     }
-    fast = !fast;
-    if (!isRunning) break;
+    return frames;
   }
+
+  return s.frames;
 }
 
-// Ich komme: schnell ganz runter, langsam hoch zwischen 80-100%
-async function ichKommeLoop() {
-  const s = currentScript;
-  const min = 5;
-  const max = Math.round(98);
-  while (isRunning && currentScript?.id === 'ich_komme') {
-    // Schnell ganz nach unten
-    await setHampSpeed(45);
-    await setSlide(min, max);
-    await delay(500);
-    if (!isRunning) break;
-    // Langsam hoch – nur zwischen 80% und 100%
-    const topMin = Math.round(max * 0.80);
-    await setHampSpeed(5);
-    await setSlide(topMin, max);
-    await delay(3500);
-    if (!isRunning) break;
+function scaleFunscript(frames, speedPct, depthMin, depthMax) {
+  // speedPct: 10-100 → Zeitskala
+  // depthMin/Max: Positionen skalieren
+  const speedFactor = 50 / speedPct; // 50=normal, 100=doppelt schnell
+  const range = depthMax - depthMin;
+
+  return frames.map(f => ({
+    t: Math.round(f.t * speedFactor),
+    p: Math.round(depthMin + (f.p / 100) * range)
+  }));
+}
+
+function framesToCsv(frames) {
+  // Funscript CSV Format: #,pos,speed
+  // Wir nutzen das einfache Format: Zeile = "time_ms,position_pct"
+  // Handy erwartet: pos 0-100, time ms
+  let csv = '#,pos,speed\n';
+  for (let i = 0; i < frames.length; i++) {
+    const speed = i === 0 ? 50 : Math.min(100, Math.round(
+      Math.abs(frames[i].p - frames[i-1].p) / Math.max(1, frames[i].t - frames[i-1].t) * 1000
+    ));
+    csv += `${frames[i].t},${frames[i].p},${speed}\n`;
   }
+  return csv;
 }
 
-// Squat Ride: zwischen 80% und 100%, wählbare Geschwindigkeit
-async function squatRideLoop() {
-  const s = currentScript;
-  const max = Math.round(98);
-  const topMin = Math.round(max * 0.80);
-  while (isRunning && currentScript?.id === 'squat_ride') {
-    await setHampSpeed(Math.round(currentScript.speed * speedMultiplier));
-    await setSlide(topMin, max);
-    await delay(500);
-    if (!isRunning) break;
-  }
-}
-
-// Milking Hard: zufälliger Mix
-async function milkingLoop() {
-  const s = currentScript;
-  const min = s.strokeMin;
-  const max = s.strokeMax;
-  const mid = Math.round((min + max) / 2);
-  while (isRunning && currentScript?.id === 'milking_hard') {
-    const r = Math.random();
-    if (r < 0.33) {
-      // Voller Hub schnell
-      await setHampSpeed(40);
-      await setSlide(min, max);
-      await delay(1500);
-      // Unten stehen
-      await setHampSpeed(4);
-      await setSlide(min, min + 8);
-      await delay(1000);
-    } else if (r < 0.66) {
-      // Obere Hälfte schnell
-      await setHampSpeed(38);
-      await setSlide(mid, max);
-      await delay(1200);
-    } else {
-      // Untere Hälfte schnell
-      await setHampSpeed(38);
-      await setSlide(min, mid);
-      await delay(1200);
-      // Pause unten
-      await setHampSpeed(5);
-      await setSlide(min, min + 5);
-      await delay(800);
-    }
-    if (!isRunning) break;
-  }
-}
-
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// ─── API ──────────────────────────────────────────────────────────────────────
-async function handyRequest(endpoint, method = 'GET', body = null) {
+// ═══════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════
+async function api(endpoint, method = 'GET', body = null) {
   const opts = {
     method,
     headers: { 'X-Connection-Key': connectionKey, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(HANDY_BASE + endpoint, opts);
-  return res.json();
+  try {
+    const r = await fetch(PROXY + endpoint, opts);
+    return await r.json();
+  } catch(e) { return null; }
 }
 
+async function uploadScript(csv) {
+  // CSV als Blob hochladen
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const form = new FormData();
+  form.append('file', blob, 'script.csv');
+
+  try {
+    const r = await fetch(PROXY + '/script/upload', {
+      method: 'POST',
+      headers: { 'X-Connection-Key': connectionKey },
+      body: form
+    });
+    const d = await r.json();
+    return d.url || null;
+  } catch(e) { return null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SKRIPT ABSPIELEN - HAMP (einfach, zuverlässig)
+// ═══════════════════════════════════════════════════════════
+async function playScript(scriptId) {
+  const s = SCRIPTS.find(x => x.id === scriptId);
+  if (!s || !connected) return;
+
+  // Stop vorher
+  await api('/hamp/stop', 'PUT', {});
+
+  currentScriptId = scriptId;
+  isPlaying = true;
+
+  // UI
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn_' + scriptId);
+  if (btn) btn.classList.add('active');
+  const el = document.getElementById('activeScript');
+  el.textContent = s.name;
+  el.classList.add('running');
+  document.getElementById('liveCard').classList.add('running');
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('speedSlider').disabled = false;
+  document.getElementById('depthMaxSlider').disabled = false;
+  document.getElementById('depthMinSlider').disabled = false;
+
+  // Pause Card
+  document.getElementById('pauseCard').style.display = scriptId === 'milking_hard' ? 'block' : 'none';
+
+  // Kommentare starten
+  startComments(s.comments);
+
+  // HAMP starten
+  const speed = parseInt(document.getElementById('speedSlider').value);
+  const depthMin = parseInt(document.getElementById('depthMinSlider').value);
+  const depthMax = parseInt(document.getElementById('depthMaxSlider').value);
+
+  await api('/slide', 'PUT', { min: depthMin, max: depthMax });
+  await api('/mode', 'PUT', { mode: 2 });
+  await delay(100);
+  await api('/hamp/start', 'PUT', {});
+  await delay(500); // Warten bis Gerät wirklich läuft
+  // Velocity mehrfach senden zur Sicherheit
+  await api('/hamp/velocity', 'PUT', { velocity: speed });
+  await delay(200);
+  await api('/hamp/velocity', 'PUT', { velocity: speed });
+
+  // Progress Animation
+  startProgress();
+}
+
+async function stopAll(showMsg = true) {
+  isPlaying = false;
+  ohGottActive = false;
+  currentScriptId = null;
+
+  // Alle Timer stoppen
+  if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+  if (ohGottTimer) { clearTimeout(ohGottTimer); ohGottTimer = null; }
+
+  // Gerät stoppen
+  await api('/hamp/stop', 'PUT', {});
+
+  // UI
+  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('liveCard').classList.remove('running');
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('speedSlider').disabled = true;
+  document.getElementById('depthMaxSlider').disabled = true;
+  document.getElementById('depthMinSlider').disabled = true;
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressText').textContent = '–';
+  document.getElementById('pauseCard').style.display = 'none';
+  const el = document.getElementById('activeScript');
+  el.classList.remove('running');
+  if (showMsg) {
+    el.textContent = 'Gestoppt';
+    showComment('Gestoppt.');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// OH GOTT
+// ═══════════════════════════════════════════════════════════
+async function runOhGott() {
+  if (!connected) return;
+  await stopAll(false);
+  ohGottActive = true;
+  isPlaying = true;
+
+  document.getElementById('activeScript').textContent = 'Oh Gott…';
+  document.getElementById('activeScript').classList.add('running');
+  document.getElementById('liveCard').classList.add('running');
+  document.getElementById('btnStop').disabled = false;
+
+  const depthMin = parseInt(document.getElementById('depthMinSlider').value);
+  const depthMax = parseInt(document.getElementById('depthMaxSlider').value);
+
+  await api('/slide', 'PUT', { min: depthMin, max: depthMax });
+  await api('/mode', 'PUT', { mode: 2 });
+  await delay(100);
+  await api('/hamp/start', 'PUT', {});
+  await delay(500);
+  await api('/hamp/velocity', 'PUT', { velocity: 5 });
+  await delay(200);
+  await api('/hamp/velocity', 'PUT', { velocity: 5 });
+
+  const ohComments = ['Wie zum letzten Tropfen…','Ganz langsam.','Jeden Millimeter.','Atemlos.','Nicht stoppen.','Bitte Daddy!','Tief. Ohne Eile.','Bis zum Ende.','Ich höre nicht auf.','Ganz tief.'];
+  startComments(ohComments);
+  startProgress();
+  scheduleOhGottPulse();
+}
+
+function scheduleOhGottPulse() {
+  if (!ohGottActive || !isPlaying) return;
+  const wait = Math.round(4000 + Math.random() * 6000);
+  ohGottTimer = setTimeout(async () => {
+    if (!ohGottActive || !isPlaying) return;
+    const speed = parseInt(document.getElementById('speedSlider').value);
+    // Kurz schnell
+    await api('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.round(60 * speed / 50)) });
+    await delay(400);
+    if (!ohGottActive || !isPlaying) return;
+    // Wieder langsam
+    await api('/hamp/velocity', 'PUT', { velocity: Math.max(3, Math.round(5 * speed / 50)) });
+    scheduleOhGottPulse();
+  }, wait);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SPEED & DEPTH SLIDER
+// ═══════════════════════════════════════════════════════════
+async function onSpeedChange(val) {
+  const v = parseInt(val);
+  document.getElementById('speedVal').textContent = v + '%';
+  if (isPlaying) {
+    await api('/hamp/velocity', 'PUT', { velocity: v });
+  }
+  if (v <= 15) showComment('Ganz langsam…');
+  else if (v >= 85) showComment('Volle Kraft!');
+}
+
+async function onDepthChange() {
+  let dMin = parseInt(document.getElementById('depthMinSlider').value);
+  let dMax = parseInt(document.getElementById('depthMaxSlider').value);
+  if (dMin >= dMax - 10) {
+    dMin = dMax - 10;
+    document.getElementById('depthMinSlider').value = dMin;
+  }
+  document.getElementById('depthMaxVal').textContent = dMax + '%';
+  document.getElementById('depthMinVal').textContent = dMin + '%';
+  if (isPlaying) {
+    await api('/slide', 'PUT', { min: dMin, max: dMax });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// VERBINDUNG
+// ═══════════════════════════════════════════════════════════
 async function connect() {
   connectionKey = document.getElementById('keyInput').value.trim();
   if (!connectionKey) return;
   setStatus('Verbinde…', '');
   document.getElementById('btnConnect').disabled = true;
-  try {
-    const info = await handyRequest('/info');
-    if (!info || info.name === 'Bad request') throw new Error(info?.message || 'Ungültiger Key');
+  const info = await api('/info');
+  if (info && !info.name) {
     connected = true;
     setStatus('Verbunden ✓', 'connected');
-    enableScripts(true);
-    ['btnChallenge','btnRandom','btnTimer','btnCountdown',
-     'btnOhGott','rUp','rDown','rPlay','rStop','rSlower','rFaster'].forEach(id => {
-      const b = document.getElementById(id);
-      if (b) b.disabled = false;
-    });
-  } catch(e) {
-    setStatus('Fehler: ' + e.message, 'error');
-    connected = false;
+    enableAll(true);
+  } else {
+    setStatus('Fehler: ' + (info?.message || 'Ungültiger Key'), 'error');
   }
   document.getElementById('btnConnect').disabled = false;
 }
 
-// Velocity NUR setzen wenn Gerät läuft
-async function setHampSpeed(speed) {
-  if (!isRunning) return;
-  const sliderVal = parseInt(document.getElementById('speedSlider').value);
-  const effective = Math.min(100, Math.max(1, Math.round(speed * (sliderVal / 50))));
-  try { await handyRequest('/hamp/velocity', 'PUT', { velocity: effective }); } catch(e) {}
-  lastSetSpeed = speed; // merken für updateSpeed
-}
-let lastSetSpeed = 30;
-
-async function setSlide(min, max) {
-  const eMin = Math.max(0, Math.min(customDepthMin, customDepthMax - 10));
-  const eMax = Math.min(100, Math.max(customDepthMax, customDepthMin + 10));
-  try { await handyRequest('/slide', 'PUT', { min: eMin, max: eMax }); } catch(e) {}
+function setStatus(t, cls) {
+  document.getElementById('statusText').textContent = t;
+  document.getElementById('statusDot').className = 'status-dot ' + cls;
 }
 
-async function hampStart() {
-  try { await handyRequest('/hamp/start', 'PUT', {}); } catch(e) {}
+function enableAll(on) {
+  const ids = ['btnOhGott','btnChallenge','btnRandom','btnTimer','btnCountdown',
+               'rUp','rDown','rPlay','rStop','rSlower','rFaster'];
+  ids.forEach(id => { const b = document.getElementById(id); if(b) b.disabled = !on; });
+  document.querySelectorAll('.script-btn').forEach(b => b.disabled = !on);
 }
 
-async function hampStop() {
-  try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
+// ═══════════════════════════════════════════════════════════
+// KOMMENTARE & PROGRESS
+// ═══════════════════════════════════════════════════════════
+function startComments(list) {
+  if (commentTimer) clearInterval(commentTimer);
+  let idx = 0;
+  showComment(list[0]);
+  commentTimer = setInterval(() => {
+    idx = (idx + 1) % list.length;
+    showComment(list[idx]);
+  }, 8000);
 }
 
-// HDSP: Position + Zeit - xp=Position 0-100, ms=Dauer in Millisekunden
-// Slider skaliert die Zeit (langsamer = mehr Zeit)
-async function hdspMove(xp, ms) {
-  if (!isRunning) return;
-  const slider = parseInt(document.getElementById('speedSlider').value);
-  // Slider 50=normal, 100=doppelt so schnell (halbe Zeit), 10=sehr langsam (5x Zeit)
-  const factor = 100 / Math.max(10, slider);
-  const duration = Math.round(ms * factor);
-  try {
-    await handyRequest('/hdsp/xpt', 'PUT', { xp: Math.round(xp), t: duration, stopOnTarget: false });
-  } catch(e) {}
-}
-
-async function startHDSP() {
-  await handyRequest('/mode', 'PUT', { mode: 3 });
-  await delay(200);
-}
-
-async function startHAMP(speed) {
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  await hampStart();
-  await delay(300);
-  await setHampSpeed(speed);
-}
-
-// ─── Script Control ───────────────────────────────────────────────────────────
-async function runScript(scriptId) {
-  if (!connected) { alert('Bitte zuerst verbinden.'); return; }
-  if (isRunning) await stopScript(false);
-
-  currentScript = SCRIPTS.find(s => s.id === scriptId);
-  if (!currentScript) return;
-
-  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn_' + scriptId).classList.add('active');
-
-  isRunning = true;
-  step = 0;
-
-  document.getElementById('btnStop').disabled = false;
-  document.getElementById('speedSlider').disabled = false;
-  document.getElementById('depthMaxSlider').disabled = false;
-  document.getElementById('depthMinSlider').disabled = false;
-  const activeEl = document.getElementById('activeScript');
-  activeEl.textContent = currentScript.name;
-  activeEl.classList.add('running');
-  document.getElementById('liveCard').classList.add('running');
-
-  await setSlide(currentScript.strokeMin, currentScript.strokeMax);
-  if (currentScript.useCustomLoop) {
-    await startHDSP(); // Custom Loops nutzen HDSP
-  } else {
-    await startHAMP(currentScript.speed); // Normale Skripte HAMP
-  }
-
-  showClaudeComment(currentScript.comments[0]);
-
-  // Custom loop or standard comment loop
-  if (currentScript.useCustomLoop) {
-    if (scriptId === 'ich_komme') ichKommeLoop();
-    else if (scriptId === 'squat_ride') squatRideLoop();
-    else if (scriptId === 'pronebone') proneboneLoop();
-    else if (scriptId === 'deep_seeding') deepSeedingLoop();
-    else if (scriptId === 'milking_hard') milkingLoop();
-  }
-
-  let commentIdx = 0;
-  scriptInterval = setInterval(() => {
-    step += 0.15;
-    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    document.getElementById('progressText').textContent = Math.round(progress) + '%';
-    const newIdx = Math.floor(step / 20) % currentScript.comments.length;
-    if (newIdx !== commentIdx) { commentIdx = newIdx; showClaudeComment(currentScript.comments[commentIdx]); }
-  }, 200);
-}
-
-async function stopScript(showStopped = true) {
-  isRunning = false;
-  ohGottRunning = false;
-  currentScript = null;
-  if (scriptInterval) { clearInterval(scriptInterval); scriptInterval = null; }
-  await hampStop();
-  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('btnStop').disabled = true;
-  document.getElementById('speedSlider').disabled = true;
-  document.getElementById('depthMaxSlider').disabled = true;
-  document.getElementById('depthMinSlider').disabled = true;
-  document.getElementById('liveCard').classList.remove('running');
-  document.getElementById('progressBar').style.width = '0%';
-  document.getElementById('progressText').textContent = '–';
-  if (showStopped) { document.getElementById('activeScript').textContent = 'Gestoppt'; showClaudeComment('Gestoppt.'); }
-}
-
-function updateSpeed(val) {
-  const v = parseInt(val);
-  document.getElementById('speedVal').textContent = v + '%';
-  speedMultiplier = v / 50;
-  if (isRunning) {
-    const base = lastSetSpeed || (currentScript ? currentScript.speed : 30);
-    const effective = Math.min(100, Math.max(1, Math.round(base * speedMultiplier)));
-    handyRequest('/hamp/velocity', 'PUT', { velocity: effective }).catch(()=>{});
-  }
-  // Dynamischer Text nur bei Extremen
-  if (v <= 15) showClaudeComment('Ganz langsam…');
-  else if (v >= 90) showClaudeComment('Volle Kraft!');
-}
-
-let customDepthMax = 98;
-let customDepthMin = 5;
-
-function updateDepthMax(val) {
-  customDepthMax = parseInt(val);
-  if (customDepthMax <= customDepthMin + 10) {
-    customDepthMax = customDepthMin + 10;
-    document.getElementById('depthMaxSlider').value = customDepthMax;
-  }
-  document.getElementById('depthMaxVal').textContent = customDepthMax + '%';
-  if (isRunning) handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax }).catch(()=>{});
-}
-
-function updateDepthMin(val) {
-  customDepthMin = parseInt(val);
-  if (customDepthMin >= customDepthMax - 10) {
-    customDepthMin = customDepthMax - 10;
-    document.getElementById('depthMinSlider').value = customDepthMin;
-  }
-  document.getElementById('depthMinVal').textContent = customDepthMin + '%';
-  if (isRunning) handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax }).catch(()=>{});
-}
-
-// ─── Story ────────────────────────────────────────────────────────────────────
-
-// ─── UI Helpers ───────────────────────────────────────────────────────────────
-function showClaudeComment(text) {
+function showComment(text) {
   const box = document.getElementById('claudeComment');
   box.innerHTML = '';
   let i = 0;
   function type() {
-    if (i < text.length) { box.innerHTML = text.slice(0, i+1) + '<span class="typing-cursor"></span>'; i++; setTimeout(type, 28 + Math.random()*20); }
-    else box.innerHTML = text;
+    if (i < text.length) {
+      box.innerHTML = text.slice(0,i+1) + '<span class="typing-cursor"></span>';
+      i++;
+      setTimeout(type, 30 + Math.random() * 20);
+    } else {
+      box.innerHTML = text;
+    }
   }
   type();
 }
 
-function setStatus(text, cls) {
-  document.getElementById('statusText').textContent = text;
-  document.getElementById('statusDot').className = 'status-dot ' + cls;
+function startProgress() {
+  if (progressTimer) clearInterval(progressTimer);
+  let p = 0;
+  progressTimer = setInterval(() => {
+    p = (p + 1) % 100;
+    document.getElementById('progressBar').style.width = p + '%';
+  }, 200);
 }
 
-function enableScripts(on) { document.querySelectorAll('.script-btn').forEach(b => b.disabled = !on); }
-
-function buildScriptButtons() {
-  const grid = document.getElementById('scriptsGrid');
-  grid.innerHTML = '';
-  SCRIPTS.forEach(s => {
-    const btn = document.createElement('button');
-    btn.className = 'script-btn'; btn.id = 'btn_' + s.id; btn.disabled = true;
-    btn.innerHTML = `<span class="s-icon">${s.icon}</span><span class="s-name">${s.name}</span><span class="s-desc">${s.desc}</span>`;
-    btn.onclick = () => runScript(s.id);
-    grid.appendChild(btn);
-  });
-}
-
-
-
-async function sendCommand() {
-  const input = document.getElementById('cmdInput');
-  const cmd = input.value.trim().toLowerCase();
-  input.value = '';
-  if (!cmd) return;
-  if (cmd.includes('stop') || cmd.includes('pause') || cmd.includes('halt')) { await stopScript(); return; }
-  if (cmd.includes('schneller') || cmd.includes('mehr')) {
-    const s = document.getElementById('speedSlider');
-    s.value = Math.min(100, parseInt(s.value) + 15); updateSpeed(s.value); return;
-  }
-  if (cmd.includes('langsamer') || cmd.includes('weniger')) {
-    const s = document.getElementById('speedSlider');
-    s.value = Math.max(0, parseInt(s.value) - 15); updateSpeed(s.value); return;
-  }
-  if (cmd.includes('tiefer')) {
-    const s = document.getElementById('depthSlider');
-    s.value = Math.min(100, parseInt(s.value) + 15); updateDepth(s.value); return;
-  }
-  if (cmd.includes('flacher')) {
-    const s = document.getElementById('depthSlider');
-    s.value = Math.max(10, parseInt(s.value) - 15); updateDepth(s.value); return;
-  }
-  for (const s of SCRIPTS) {
-    if (cmd.includes(s.name.toLowerCase()) || cmd.includes(s.id.replace(/_/g,' '))) { await runScript(s.id); return; }
-  }
-  showClaudeComment('Unbekannt: "' + cmd + '"');
-}
-
-
-
-
-
-
-
-
-
-
-// ─── Skip Phase ───────────────────────────────────────────────────────────────
-function skipPhase() {
-  if (countdownInterval) {
-    // Countdown: sofort zur nächsten Phase
-    countdownRemaining = 1; // wird beim nächsten Tick ausgelöst
-    showClaudeComment('Nächste Phase…');
-  } else if (timerModeInterval) {
-    // Timer: Phase sofort wechseln
-    timerSeconds = 1;
-    showClaudeComment('Weiter.');
-  }
-}
-
-// ─── Fernbedienung ────────────────────────────────────────────────────────────
-function getRemoteStep() {
-  const s = document.getElementById('remoteStep');
-  s.oninput = () => document.getElementById('remoteStepVal').textContent = s.value + '%';
-  return parseInt(s.value);
-}
-
+// ═══════════════════════════════════════════════════════════
+// FERNBEDIENUNG
+// ═══════════════════════════════════════════════════════════
 async function remotePlay() {
   if (!connected) return;
-  if (isRunning) { await stopScript(false); }
-  // Eigener Remote-Modus: direkt starten ohne Skript
-  isRunning = true;
-  step = 0;
-  document.getElementById('btnStop').disabled = false;
-  document.getElementById('speedSlider').disabled = false;
-  document.getElementById('depthMaxSlider').disabled = false;
-  document.getElementById('depthMinSlider').disabled = false;
-  document.getElementById('activeScript').textContent = 'Fernbedienung';
-  document.getElementById('liveCard').classList.add('running');
-  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  const min = customDepthMin || 5;
-  const max = customDepthMax || 98;
-  await handyRequest('/slide', 'PUT', { min, max });
-  await hampStart();
-  const spd = Math.round((parseInt(document.getElementById('speedSlider').value) / 100) * 100);
-  await handyRequest('/hamp/velocity', 'PUT', { velocity: spd });
-  showClaudeComment('Fernbedienung aktiv.');
-  if (scriptInterval) clearInterval(scriptInterval);
-  scriptInterval = setInterval(() => {
-    step += 0.15;
-    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    document.getElementById('progressText').textContent = Math.round(progress) + '%';
-  }, 200);
+  if (isPlaying) return;
+  const id = currentScriptId || SCRIPTS[0].id;
+  await playScript(id);
 }
 
-async function remoteUp() {
-  if (!connected) return;
-  const step = getRemoteStep();
-  const slider = document.getElementById('depthMinSlider');
-  if (!slider) return;
-  slider.value = Math.min(90, parseInt(slider.value) + step);
-  updateDepthMin(slider.value);
-  if (isRunning) await handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax });
-  showClaudeComment('Höher: ' + slider.value + '%');
-}
-
-async function remoteDown() {
-  if (!connected) return;
-  const step = getRemoteStep();
-  const slider = document.getElementById('depthMaxSlider');
-  if (!slider) return;
-  slider.value = Math.max(10, parseInt(slider.value) - step);
-  updateDepthMax(slider.value);
-  if (isRunning) await handyRequest('/slide', 'PUT', { min: customDepthMin, max: customDepthMax });
-  showClaudeComment('Tiefer: ' + slider.value + '%');
-}
-
-function remoteFaster() {
-  const step = getRemoteStep();
-  const slider = document.getElementById('speedSlider');
-  slider.value = Math.min(100, parseInt(slider.value) + step);
-  updateSpeed(slider.value);
-}
-
-function remoteSlower() {
-  const step = getRemoteStep();
-  const slider = document.getElementById('speedSlider');
-  slider.value = Math.max(0, parseInt(slider.value) - step);
-  updateSpeed(slider.value);
-}
-
-// ─── Oh Gott ──────────────────────────────────────────────────────────────────
-async function ohGott() {
-  if (!connected) return;
-  if (isRunning) await stopScript(false);
-  isRunning = true;
-  document.getElementById('btnStop').disabled = false;
-  document.getElementById('depthMaxSlider').disabled = false;
-  document.getElementById('depthMinSlider').disabled = false;
-  document.getElementById('activeScript').textContent = 'Oh Gott…';
-  document.getElementById('liveCard').classList.add('running');
-  document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  await handyRequest('/slide', 'PUT', { min: 5, max: 98 });
-  await hampStart();
-  await setHampSpeed(4);
-  showClaudeComment('Ganz langsam. Jeden Moment spüren.');
-  let commentIdx = 0;
-  const comments = ['Wie zum letzten Tropfen…', 'Ganz langsam.', 'Tief. Ohne Eile.', 'Atemlos.', 'Ich höre nicht auf.', 'Bitte Daddy!', 'Jeden Millimeter.', 'Nicht stoppen.', 'Ganz tief.', 'Bis zum Ende.'];
-  if (scriptInterval) clearInterval(scriptInterval);
-  scriptInterval = setInterval(() => {
-    step += 0.15;
-    const progress = ((step % (Math.PI * 4)) / (Math.PI * 4)) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    const newIdx = Math.floor(step / 8) % comments.length;
-    if (newIdx !== commentIdx) { commentIdx = newIdx; showClaudeComment(comments[commentIdx]); }
-  }, 200);
-}
-
-// ─── Happy End ────────────────────────────────────────────────────────────────
-function showHappyEnd() {
-  document.getElementById('happyEndCard').style.display = 'block';
-  document.getElementById('happyEndCard').scrollIntoView({ behavior: 'smooth' });
-  showClaudeComment('Wie weiter? 👆');
-}
-
-async function happyEndChoice(choice) {
-  document.getElementById('happyEndCard').style.display = 'none';
-  if (choice === 'harder') {
-    await runScript('milking_hard');
-    const slider = document.getElementById('speedSlider');
-    slider.value = 100;
-    updateSpeed(100);
-    showClaudeComment('Härter! 💪');
-  } else if (choice === 'ichkomme') {
-    await runScript('ich_komme');
-    showClaudeComment('Ich komme! 💥');
+async function remoteAdjust(dir) {
+  const step = parseInt(document.getElementById('stepSlider').value);
+  if (dir === 'faster') {
+    const s = document.getElementById('speedSlider');
+    s.value = Math.min(100, parseInt(s.value) + step);
+    await onSpeedChange(s.value);
+  } else if (dir === 'slower') {
+    const s = document.getElementById('speedSlider');
+    s.value = Math.max(10, parseInt(s.value) - step);
+    await onSpeedChange(s.value);
+  } else if (dir === 'down') {
+    const s = document.getElementById('depthMaxSlider');
+    s.value = Math.max(20, parseInt(s.value) - step);
+    await onDepthChange();
+  } else if (dir === 'up') {
+    const s = document.getElementById('depthMinSlider');
+    s.value = Math.min(80, parseInt(s.value) + step);
+    await onDepthChange();
   }
 }
 
-// ─── Countdown Modus ──────────────────────────────────────────────────────────
-let countdownInterval = null;
-let countdownTotal = 0;
-let countdownRemaining = 0;
+// ═══════════════════════════════════════════════════════════
+// MODI
+// ═══════════════════════════════════════════════════════════
 
-// Skript-Reihenfolge nach Intensität
-const COUNTDOWN_SEQUENCE = [
-  { pct: 0,   id: 'pronebone' },
-  { pct: 15,  id: 'edging_wurzel' },
-  { pct: 30,  id: 'edging_stamm' },
-  { pct: 45,  id: 'edging_top' },
-  { pct: 58,  id: 'deepthroat' },
-  { pct: 70,  id: 'deep_seeding' },
-  { pct: 82,  id: 'milking_hard' },
-  { pct: 92,  id: 'keep_riding' },
-  { pct: 97,  id: 'ich_komme' },
-];
-
-function showCountdownPicker() {
-  // Wenn Countdown läuft: abbrechen
-  if (countdownInterval) {
-    startCountdown(0); // ruft Abbruch-Logik auf
+// Ausdauer
+function toggleChallenge() {
+  if (challengeInterval) {
+    clearInterval(challengeInterval);
+    challengeInterval = null;
+    const t = challengeSecs;
+    if (t > highScore) { highScore = t; localStorage.setItem('hcHighScore', highScore); }
+    document.getElementById('challengeScore').textContent = 'Session: ' + fmt(t) + ' · Rekord: ' + fmt(highScore);
+    document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
+    challengeSecs = 0;
     return;
   }
-  const picker = document.getElementById('countdownPicker');
-  if (picker.style.display === 'none') {
-    picker.style.display = 'block';
-    document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Tippen zum Abbrechen';
-  } else {
-    picker.style.display = 'none';
-    document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Aufbau bis zum Ziel';
-  }
+  if (!isPlaying) { showComment('Erst ein Skript starten!'); return; }
+  challengeSecs = 0;
+  document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  challengeInterval = setInterval(() => {
+    challengeSecs++;
+    document.getElementById('challengeScore').textContent = fmt(challengeSecs);
+  }, 1000);
 }
 
-async function startCountdown(minutes) {
-  if (!connected) { showClaudeComment('Erst verbinden!'); return; }
-  document.getElementById('countdownPicker').style.display = 'none';
+// Zufall
+function toggleRandom() {
+  if (randomTimeout) {
+    clearTimeout(randomTimeout);
+    randomTimeout = null;
+    document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Skript wechselt zufällig';
+    return;
+  }
+  if (!connected) return;
+  document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  const next = async () => {
+    const ids = SCRIPTS.map(s => s.id);
+    const pick = ids[Math.floor(Math.random() * ids.length)];
+    await playScript(pick);
+    if (randomTimeout !== null) {
+      randomTimeout = setTimeout(next, Math.round(10000 + Math.random() * 25000));
+    }
+  };
+  randomTimeout = setTimeout(() => {}, 0);
+  next();
+}
 
+// Timer
+function toggleTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    hideTimer();
+    stopAll();
+    document.getElementById('btnTimer').querySelector('.f-desc').textContent = '5min Edging-Zyklus';
+    return;
+  }
+  if (!connected) return;
+  timerPhaseIdx = 0;
+  document.getElementById('btnTimer').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  document.getElementById('btnSkip').style.display = 'block';
+  runTimerPhase();
+  timerInterval = setInterval(() => {
+    timerSecsLeft--;
+    document.getElementById('timerInline').textContent = fmt(timerSecsLeft);
+    if (timerSecsLeft <= 0) {
+      timerPhaseIdx = (timerPhaseIdx + 1) % TIMER_PHASES.length;
+      runTimerPhase();
+    }
+  }, 1000);
+}
+
+function runTimerPhase() {
+  const phase = TIMER_PHASES[timerPhaseIdx];
+  timerSecsLeft = phase.dur;
+  document.getElementById('timerInline').style.display = 'block';
+  document.getElementById('phaseInline').style.display = 'block';
+  document.getElementById('phaseInline').textContent = '▸ ' + phase.name.toUpperCase();
+  if (phase.id) playScript(phase.id);
+  else { stopAll(false); showComment('Pause – atme durch.'); }
+}
+
+// Countdown
+function showCountdownPicker() {
   if (countdownInterval) {
     clearInterval(countdownInterval);
     countdownInterval = null;
-    countdownRemaining = 0;
-    await stopScript();
-    document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('phaseDisplayInline').style.display = 'none';
+    hideTimer();
+    stopAll();
     document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Aufbau bis zum Ziel';
-    showClaudeComment('Countdown gestoppt.');
+    document.getElementById('happyEndCard').style.display = 'none';
     return;
   }
+  const p = document.getElementById('countdownPicker');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
 
-  countdownTotal = minutes * 60;
-  countdownRemaining = countdownTotal;
-  document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('timerDisplayInline').style.display = 'block';
-    document.getElementById('btnSkipPhase').style.display = 'block';
+async function startCountdown(mins) {
+  document.getElementById('countdownPicker').style.display = 'none';
+  if (!connected) return;
+  countdownTotal = mins * 60;
+  countdownLeft = countdownTotal;
   document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
+  document.getElementById('timerInline').style.display = 'block';
+  document.getElementById('phaseInline').style.display = 'block';
+  document.getElementById('btnSkip').style.display = 'block';
 
-  // Erstes Skript starten
-  await runScript(COUNTDOWN_SEQUENCE[0].id);
-  showClaudeComment('Countdown gestartet – ' + minutes + ' Minuten 🚀');
+  await playScript(COUNTDOWN_SEQ[0].id);
 
   countdownInterval = setInterval(async () => {
-    countdownRemaining--;
-    document.getElementById('timerDisplayInline').textContent = formatTime(countdownRemaining);
+    countdownLeft--;
+    document.getElementById('timerInline').textContent = fmt(countdownLeft);
+    const pct = ((countdownTotal - countdownLeft) / countdownTotal) * 100;
 
-    // Fortschritt in Prozent
-    const pct = ((countdownTotal - countdownRemaining) / countdownTotal) * 100;
+    // Geschwindigkeit steigern
+    const spd = Math.min(100, Math.round(20 + pct * 0.8));
+    document.getElementById('speedSlider').value = spd;
+    await onSpeedChange(spd);
 
-    // Geschwindigkeit sanft steigern (20% → 100% über die Zeit)
-    const autoSpeed = Math.round(20 + pct * 0.8);
-    const slider = document.getElementById('speedSlider');
-    slider.value = autoSpeed;
-    updateSpeed(autoSpeed);
-
-    // Skript wechseln wenn nächste Phase erreicht
-    for (let i = COUNTDOWN_SEQUENCE.length - 1; i >= 0; i--) {
-      if (pct >= COUNTDOWN_SEQUENCE[i].pct) {
-        const nextId = COUNTDOWN_SEQUENCE[i].id;
-        if (currentScript?.id !== nextId) {
-          await runScript(nextId);
-          const phaseName = SCRIPTS.find(s=>s.id===nextId)?.name || '';
-          showClaudeComment('Phase: ' + phaseName + ' 🚀');
-          const pd = document.getElementById('phaseDisplay');
-          pd.style.display = 'block';
-          pd.textContent = '▸ ' + phaseName.toUpperCase();
+    // Phasenwechsel
+    for (let i = COUNTDOWN_SEQ.length - 1; i >= 0; i--) {
+      if (pct >= COUNTDOWN_SEQ[i].pct) {
+        const nid = COUNTDOWN_SEQ[i].id;
+        if (currentScriptId !== nid) {
+          await playScript(nid);
+          const s = SCRIPTS.find(x=>x.id===nid);
+          document.getElementById('phaseInline').textContent = '▸ ' + (s?.name||'').toUpperCase();
         }
         break;
       }
     }
 
-    if (countdownRemaining <= 0) {
+    if (countdownLeft <= 0) {
       clearInterval(countdownInterval);
       countdownInterval = null;
-      document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-      document.getElementById('phaseDisplayInline').style.display = 'none';
-      document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Aufbau bis zum Ziel';
-      // Milking Hard starten und Happy End anzeigen
-      await runScript('milking_hard');
-      showHappyEnd();
+      hideTimer();
+      await playScript('milking_hard');
+      document.getElementById('happyEndCard').style.display = 'block';
+      document.getElementById('happyEndCard').scrollIntoView({behavior:'smooth'});
     }
   }, 1000);
 }
 
-
-// ─── Pause Timer ──────────────────────────────────────────────────────────────
-function setPauseDuration(sec) {
-  document.getElementById('pauseDurationSlider').value = sec;
-  document.getElementById('pauseDurationVal').textContent = sec + 's';
-  showClaudeComment('Pause: ' + sec + ' Sekunden eingestellt.');
+function skipPhase() {
+  if (timerInterval) timerSecsLeft = 1;
+  if (countdownInterval) countdownLeft = 1;
 }
 
-function getPauseDuration() {
-  return parseInt(document.getElementById('pauseDurationSlider').value) * 1000;
-}
-
-// ─── Gamification ─────────────────────────────────────────────────────────────
-let challengeInterval = null;
-let challengeSeconds = 0;
-let highScore = parseInt(localStorage.getItem('handyHighScore') || '0');
-
-function startChallenge() {
-  if (challengeInterval) {
-    clearInterval(challengeInterval);
-    challengeInterval = null;
-    const s = challengeSeconds;
-    if (s > highScore) {
-      highScore = s;
-      localStorage.setItem('handyHighScore', highScore);
-    }
-    document.getElementById('scoreDisplay').textContent = 
-      'Session: ' + formatTime(s) + ' · Rekord: ' + formatTime(highScore);
-    document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
-    challengeSeconds = 0;
-    return;
-  }
-  if (!isRunning) { showClaudeComment('Erst ein Skript starten!'); return; }
-  challengeSeconds = 0;
-  document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('timerDisplayInline').style.display = 'block';
-    document.getElementById('btnSkipPhase').style.display = 'block';
-  document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
-  challengeInterval = setInterval(() => {
-    challengeSeconds++;
-    document.getElementById('timerDisplay').textContent = formatTime(challengeSeconds);
-  }, 1000);
-  showClaudeComment('Challenge gestartet – halt durch! 🏆');
-}
-
-// ─── Zufalls-Challenge ────────────────────────────────────────────────────────
-let randomInterval = null;
-
-function startRandom() {
-  if (randomInterval) {
-    clearInterval(randomInterval);
-    randomInterval = null;
-    document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Skript wechselt zufällig';
-    showClaudeComment('Zufall gestoppt.');
-    return;
-  }
-  if (!connected) { showClaudeComment('Erst verbinden!'); return; }
-  document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
-  
-  const randomScript = () => {
-    const ids = SCRIPTS.map(s => s.id);
-    const pick = ids[Math.floor(Math.random() * ids.length)];
-    runScript(pick);
-    showClaudeComment('Zufalls-Skript: ' + SCRIPTS.find(s=>s.id===pick).name + ' 🎲');
-  };
-  
-  randomScript();
-  const nextIn = () => (Math.random() * 25000 + 10000); // 10-35 Sekunden
-  
-  const scheduleNext = () => {
-    randomInterval = setTimeout(() => {
-      if (randomInterval !== null) { randomScript(); scheduleNext(); }
-    }, nextIn());
-  };
-  scheduleNext();
-  showClaudeComment('Zufall aktiv – Skript wechselt alle 10-35 Sek 🎲');
-}
-
-// ─── Timer-Modi ───────────────────────────────────────────────────────────────
-let timerModeInterval = null;
-let timerPhase = 0;
-const TIMER_PHASES = [
-  { name: 'Edging Stamm', script: 'edging_stamm', duration: 120 },
-  { name: 'Pause – atmen', script: null, duration: 20 },
-  { name: 'Edging Top', script: 'edging_top', duration: 90 },
-  { name: 'Pause – atmen', script: null, duration: 20 },
-  { name: 'Deep Seeding', script: 'deep_seeding', duration: 60 },
-  { name: 'Pause – atmen', script: null, duration: 30 },
-  { name: 'Milking Hard', script: 'milking_hard', duration: 60 },
-];
-let timerSeconds = 0;
-let timerPhaseIdx = 0;
-
-async function startTimer() {
-  if (timerModeInterval) {
-    clearInterval(timerModeInterval);
-    timerModeInterval = null;
-    document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('btnTimer').querySelector('.f-desc').textContent = '5min Edging-Zyklus';
-    await stopScript();
-    return;
-  }
-  if (!connected) { showClaudeComment('Erst verbinden!'); return; }
-
-  timerPhaseIdx = 0;
-  timerSeconds = 0;
-  document.getElementById('timerDisplayInline').style.display = 'block';
-  document.getElementById('btnSkipPhase').style.display = 'block';
-  document.getElementById('btnTimer').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
-
-  const runPhase = async () => {
-    const phase = TIMER_PHASES[timerPhaseIdx];
-    timerSeconds = phase.duration;
-    if (phase.script) {
-      await runScript(phase.script);
-      showClaudeComment(phase.name + '.');
-    } else {
-      await stopScript(false);
-      showClaudeComment('Pause – atme durch.');
-    }
-  };
-
-  await runPhase();
-
-  timerModeInterval = setInterval(async () => {
-    timerSeconds--;
-    document.getElementById('timerDisplayInline').textContent = formatTime(timerSeconds);
-    if (timerSeconds <= 0) {
-      timerPhaseIdx = (timerPhaseIdx + 1) % TIMER_PHASES.length;
-      await runPhase();
-    }
-  }, 1000);
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
-}
-
-// ─── Text-to-Speech ───────────────────────────────────────────────────────────
-let ttsEnabled = false;
-let ttsVoice = null;
-
-function initVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  // Deutsche Stimme bevorzugen, weiblich
-  ttsVoice = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('female'))
-    || voices.find(v => v.lang.startsWith('de'))
-    || voices[0];
-}
-
-window.speechSynthesis.onvoiceschanged = initVoices;
-initVoices();
-
-function toggleTts() {
-  ttsEnabled = !ttsEnabled;
-  const btn = document.getElementById('btnTts');
-  if (ttsEnabled) {
-    btn.classList.add('active');
-    btn.textContent = '🔊';
-    showClaudeComment('Vorlesen aktiviert.');
+async function happyChoice(c) {
+  document.getElementById('happyEndCard').style.display = 'none';
+  if (c === 'harder') {
+    await playScript('milking_hard');
+    document.getElementById('speedSlider').value = 100;
+    await onSpeedChange(100);
+    showComment('Härter! 💪');
   } else {
-    btn.classList.remove('active');
-    btn.textContent = '🔇';
-    window.speechSynthesis.cancel();
-    showClaudeComment('Vorlesen deaktiviert.');
+    await playScript('ich_komme');
+    showComment('Ich komme! 💥');
   }
 }
 
-function speakText(text) {
-  if (!ttsEnabled) return;
-  window.speechSynthesis.cancel();
-  const clean = text.replace(/<[^>]+>/g, '').trim();
-  if (!clean) return;
-  const utt = new SpeechSynthesisUtterance(clean);
-  utt.lang = 'de-DE';
-  utt.rate = 0.88;
-  utt.pitch = 1.05;
-  if (ttsVoice) utt.voice = ttsVoice;
-  window.speechSynthesis.speak(utt);
+function hideTimer() {
+  document.getElementById('timerInline').style.display = 'none';
+  document.getElementById('phaseInline').style.display = 'none';
+  document.getElementById('btnSkip').style.display = 'none';
 }
 
-// ─── Speech Recognition ───────────────────────────────────────────────────────
-let recognition = null;
-let micActive = false;
+// ═══════════════════════════════════════════════════════════
+// PAUSE TIMER
+// ═══════════════════════════════════════════════════════════
+function setPause(s) {
+  document.getElementById('pauseSlider').value = s;
+  document.getElementById('pauseVal').textContent = s + 's';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SPRACHBEFEHLE
+// ═══════════════════════════════════════════════════════════
+async function sendCommand() {
+  const input = document.getElementById('cmdInput');
+  const cmd = input.value.trim().toLowerCase();
+  input.value = '';
+  if (!cmd) return;
+  if (['stop','pause','halt'].some(w => cmd.includes(w))) { await stopAll(); return; }
+  if (['schneller','faster','mehr'].some(w => cmd.includes(w))) { remoteAdjust('faster'); return; }
+  if (['langsamer','slower','weniger'].some(w => cmd.includes(w))) { remoteAdjust('slower'); return; }
+  if (['tiefer','deeper'].some(w => cmd.includes(w))) { remoteAdjust('down'); return; }
+  if (['höher','higher','flacher'].some(w => cmd.includes(w))) { remoteAdjust('up'); return; }
+  for (const s of SCRIPTS) {
+    if (cmd.includes(s.name.toLowerCase()) || cmd.includes(s.id.replace(/_/g,' '))) {
+      await playScript(s.id); return;
+    }
+  }
+  showComment('Unbekannt: "' + cmd + '"');
+}
 
 function toggleMic() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Spracherkennung wird von diesem Browser nicht unterstützt. Bitte Chrome verwenden.');
+  if (micActive) {
+    if (recognition) recognition.stop();
+    micActive = false;
+    document.getElementById('btnMic').classList.remove('active');
+    document.getElementById('btnMic').textContent = '🎤';
     return;
   }
-  if (micActive) {
-    stopMic();
-  } else {
-    startMic();
-  }
-}
-
-function startMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Kein Mikrofon-Support. Bitte Chrome verwenden.'); return; }
   recognition = new SR();
   recognition.lang = 'de-DE';
   recognition.continuous = true;
   recognition.interimResults = false;
-
-  recognition.onresult = (event) => {
-    const last = event.results[event.results.length - 1];
-    const cmd = last[0].transcript.trim().toLowerCase();
-    document.getElementById('cmdInput').value = cmd;
+  recognition.onresult = e => {
+    const t = e.results[e.results.length-1][0].transcript.trim().toLowerCase();
+    document.getElementById('cmdInput').value = t;
     sendCommand();
   };
-
-  recognition.onerror = (e) => {
-    if (e.error !== 'no-speech') stopMic();
-  };
-
-  recognition.onend = () => {
-    if (micActive) recognition.start(); // Neustart wenn noch aktiv
-  };
-
+  recognition.onend = () => { if (micActive) recognition.start(); };
+  recognition.onerror = () => {};
   recognition.start();
   micActive = true;
-  const btn = document.getElementById('btnMic');
-  btn.classList.add('active');
-  btn.textContent = '🔴';
-  showClaudeComment('Spracherkennung aktiv – ich höre zu.');
+  document.getElementById('btnMic').classList.add('active');
+  document.getElementById('btnMic').textContent = '🔴';
+  showComment('Spracherkennung aktiv.');
 }
 
-function stopMic() {
-  if (recognition) { recognition.stop(); recognition = null; }
-  micActive = false;
-  const btn = document.getElementById('btnMic');
-  btn.classList.remove('active');
-  btn.textContent = '🎤';
-  showClaudeComment('Spracherkennung gestoppt.');
+// ═══════════════════════════════════════════════════════════
+// HILFSFUNKTIONEN
+// ═══════════════════════════════════════════════════════════
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function fmt(s) {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
 }
 
-buildScriptButtons();
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function buildScripts() {
+  const grid = document.getElementById('scriptsGrid');
+  SCRIPTS.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'script-btn';
+    btn.id = 'btn_' + s.id;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="s-icon">${s.icon}</span><span class="s-name">${s.name}</span><span class="s-desc">${s.desc}</span>`;
+    btn.onclick = () => playScript(s.id);
+    grid.appendChild(btn);
+  });
+}
+
+buildScripts();
 </script>
 </body>
 </html>
