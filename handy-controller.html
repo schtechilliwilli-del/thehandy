@@ -274,6 +274,7 @@ const SCRIPTS = [
   {
     id: 'pronebone',
     name: 'Pronebone',
+    useCustomLoop: true,
     icon: '〰️',
     desc: 'Langsam dann schnell tief',
     speed: 15,
@@ -324,6 +325,7 @@ const SCRIPTS = [
   {
     id: 'milking_hard',
     name: 'Milking Hard',
+    useCustomLoop: true,
     icon: '⚡',
     desc: 'Zufälliger Mix, Pausen',
     speed: 40,
@@ -334,6 +336,7 @@ const SCRIPTS = [
   {
     id: 'deep_seeding',
     name: 'Deep Seeding',
+    useCustomLoop: true,
     icon: '🌊',
     desc: 'Schnell runter, langsam hoch',
     speed: 35,
@@ -344,6 +347,7 @@ const SCRIPTS = [
   {
     id: 'ich_komme',
     name: 'Ich komme!',
+    useCustomLoop: true,
     icon: '💥',
     desc: 'Schnell runter, extrem langsam hoch',
     speed: 95,
@@ -354,6 +358,7 @@ const SCRIPTS = [
   {
     id: 'squat_ride',
     name: 'Squat Ride',
+    useCustomLoop: true,
     icon: '🏋️',
     desc: 'Nur oben 80-100%, wählbar',
     speed: 25,
@@ -552,25 +557,29 @@ async function hampStart() {
 
 async function hampStop() {
   try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
-  try { await handyRequest('/hdsp/xpvp', 'PUT', { xp: 50, vp: 0, stopOnTarget: true }); } catch(e) {}
 }
 
-// HDSP: direkte Positionssteuerung mit Geschwindigkeit
-async function hdspMove(positionPercent, velocityPercent) {
+// HDSP: Positionssteuerung - xp=Position 0-100, vp=Geschwindigkeit 0-100
+// Slider skaliert die Geschwindigkeit
+async function hdspMove(xp, vp) {
   if (!isRunning) return;
-  const sliderVal = parseInt(document.getElementById('speedSlider').value);
-  const effectiveVel = Math.min(100, Math.max(1, Math.round(velocityPercent * (sliderVal / 50))));
-  try { 
-    await handyRequest('/hdsp/xpvp', 'PUT', { 
-      xp: Math.round(positionPercent), 
-      vp: effectiveVel,
-      stopOnTarget: false
-    }); 
+  const slider = parseInt(document.getElementById('speedSlider').value);
+  const vel = Math.min(100, Math.max(1, Math.round(vp * (slider / 50))));
+  try {
+    await handyRequest('/hdsp/xpvp', 'PUT', { xp: Math.round(xp), vp: vel, stopOnTarget: false });
   } catch(e) {}
 }
 
-async function hdspStart() {
-  await handyRequest('/mode', 'PUT', { mode: 3 }); // HDSP = mode 3
+async function startHDSP() {
+  await handyRequest('/mode', 'PUT', { mode: 3 });
+  await delay(200);
+}
+
+async function startHAMP(speed) {
+  await handyRequest('/mode', 'PUT', { mode: 2 });
+  await hampStart();
+  await delay(300);
+  await setHampSpeed(speed);
 }
 
 // ─── Script Control ───────────────────────────────────────────────────────────
@@ -596,12 +605,12 @@ async function runScript(scriptId) {
   activeEl.classList.add('running');
   document.getElementById('liveCard').classList.add('running');
 
-  // Immer HAMP
   await setSlide(currentScript.strokeMin, currentScript.strokeMax);
-  await handyRequest('/mode', 'PUT', { mode: 2 });
-  await hampStart();
-  await delay(300);
-  await setHampSpeed(currentScript.speed);
+  if (currentScript.useCustomLoop) {
+    await startHDSP(); // Custom Loops nutzen HDSP
+  } else {
+    await startHAMP(currentScript.speed); // Normale Skripte HAMP
+  }
 
   showClaudeComment(currentScript.comments[0]);
 
