@@ -262,6 +262,10 @@
     </div>
   </div>
   <div style="margin-top:10px;font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted)" id="challengeScore"></div>
+  <div id="challengeRecords" style="margin-top:8px;display:none;">
+    <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:6px;">BESTENLISTE</div>
+    <div id="challengeRecordList" style="font-family:'Space Mono',monospace;font-size:0.72rem;line-height:1.8;"></div>
+  </div>
 </div>
 
 <!-- Happy End -->
@@ -302,6 +306,34 @@ let randomTimeout = null;
 let challengeInterval = null;
 let challengeSecs = 0;
 let highScore = parseInt(localStorage.getItem('hcHighScore') || '0');
+
+function loadChallengeRecords() {
+  try { return JSON.parse(localStorage.getItem('hcRecords') || '[]'); } catch { return []; }
+}
+function saveRecord(secs) {
+  let records = loadChallengeRecords();
+  const now = new Date();
+  const label = now.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit'}) + ' ' +
+                now.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+  records.push({ t: secs, date: label });
+  records.sort((a,b) => b.t - a.t);
+  records = records.slice(0, 10); // Top 10 behalten
+  localStorage.setItem('hcRecords', JSON.stringify(records));
+  return records;
+}
+function renderRecords() {
+  const records = loadChallengeRecords();
+  if (!records.length) return;
+  const list = document.getElementById('challengeRecordList');
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = records.map((r,i) =>
+    `<div style="display:flex;justify-content:space-between;opacity:${i===0?1:0.7}">
+      <span>${medals[i]||('  '+(i+1)+'.')} ${r.date}</span>
+      <span style="color:var(--accent)">${fmt(r.t)}</span>
+    </div>`
+  ).join('');
+  document.getElementById('challengeRecords').style.display = 'block';
+}
 let micActive = false;
 let recognition = null;
 let ohGottActive = false;
@@ -1091,6 +1123,21 @@ async function stopAll(showMsg = true) {
 // ═══════════════════════════════════════════════════════════
 async function runOhGott() {
   if (!connected) return;
+
+  // Ausdauer-Timer stoppen und Zeit als Rekord speichern
+  if (challengeInterval) {
+    clearInterval(challengeInterval);
+    challengeInterval = null;
+    const t = challengeSecs;
+    if (t > highScore) { highScore = t; localStorage.setItem('hcHighScore', highScore); }
+    if (t > 5) saveRecord(t);
+    document.getElementById('challengeScore').textContent = '🏳 Aufgegeben nach ' + fmt(t) + ' · Rekord: ' + fmt(highScore);
+    document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
+    hideTimer();
+    challengeSecs = 0;
+    renderRecords();
+  }
+
   await stopAll(false);
   ohGottActive = true;
   isPlaying = true;
@@ -1317,25 +1364,102 @@ async function remoteAdjust(dir) {
 // MODI
 // ═══════════════════════════════════════════════════════════
 
+// Feste Dauer pro Phase in Sekunden – nach ~2min volle Kraft
+const CHALLENGE_PHASES = [
+  { id:'edging_stamm',  name:'Edging Stamm',  speedFrom:28, speedTo:42,  dur:25 },
+  { id:'edging_top',    name:'Edging Top',     speedFrom:38, speedTo:55,  dur:20 },
+  { id:'keep_riding',   name:'Keep Riding',    speedFrom:48, speedTo:65,  dur:18 },
+  { id:'deepthroat',    name:'Deepthroat',     speedFrom:58, speedTo:75,  dur:15 },
+  { id:'deep_seeding',  name:'Deep Seeding',   speedFrom:68, speedTo:85,  dur:15 },
+  { id:'squat_ride',    name:'Squat Ride',     speedFrom:75, speedTo:92,  dur:12 },
+  { id:'milking_hard',  name:'Milking Hard',   speedFrom:82, speedTo:100, dur:10 },
+  { id:'ich_komme',     name:'Ich komme!',     speedFrom:88, speedTo:100, dur:9999 },
+];
+
+let challengePhaseIdx = 0;
+let challengePhaseSecs = 0;
+let challengePhaseDurations = [];
+
 // Ausdauer
-function toggleChallenge() {
+async function toggleChallenge() {
   if (challengeInterval) {
     clearInterval(challengeInterval);
     challengeInterval = null;
     const t = challengeSecs;
     if (t > highScore) { highScore = t; localStorage.setItem('hcHighScore', highScore); }
+    if (t > 5) saveRecord(t); // nur speichern wenn >5s
     document.getElementById('challengeScore').textContent = 'Session: ' + fmt(t) + ' · Rekord: ' + fmt(highScore);
     document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
+    hideTimer();
     challengeSecs = 0;
+    renderRecords();
     return;
   }
-  if (!isPlaying) { showComment('Erst ein Skript starten!'); return; }
+  if (!connected) return;
   challengeSecs = 0;
+  challengePhaseIdx = 0;
+
+  // Feste Dauer direkt aus der Phase
+  challengePhaseDurations = CHALLENGE_PHASES.map(p => p.dur);
+  challengePhaseSecs = challengePhaseDurations[0];
+
   document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
-  challengeInterval = setInterval(() => {
+  document.getElementById('timerInline').style.display = 'block';
+  document.getElementById('phaseInline').style.display = 'block';
+  document.getElementById('btnSkip').style.display = 'block';
+
+  await challengeStartPhase(0);
+
+  challengeInterval = setInterval(async () => {
+    if (!challengeInterval) return;
     challengeSecs++;
+    challengePhaseSecs--;
+
     document.getElementById('challengeScore').textContent = fmt(challengeSecs);
+    document.getElementById('timerInline').textContent = fmt(challengeSecs);
+
+    // Innerhalb der Phase: Speed eskalieren
+    if (!manualOverride) {
+      const phase = CHALLENGE_PHASES[challengePhaseIdx];
+      const dur = challengePhaseDurations[challengePhaseIdx];
+      const elapsed = dur - challengePhaseSecs;
+      const progress = Math.min(1, elapsed / Math.max(1, dur));
+      const spd = Math.round(phase.speedFrom + (phase.speedTo - phase.speedFrom) * progress);
+      document.getElementById('speedSlider').value = spd;
+      document.getElementById('speedVal').textContent = spd + '%';
+      await api('/hamp/velocity', 'PUT', { velocity: spd });
+    }
+
+    // Phasenwechsel
+    if (challengePhaseSecs <= 0) {
+      if (challengePhaseIdx < CHALLENGE_PHASES.length - 1) {
+        challengePhaseIdx++;
+        challengePhaseSecs = challengePhaseDurations[challengePhaseIdx];
+        await challengeStartPhase(challengePhaseIdx);
+      } else {
+        // Letzte Phase – läuft endlos bis Stop oder Oh Gott
+        challengePhaseSecs = 9999;
+        showComment('Kein Entkommen mehr. 💀');
+      }
+    }
   }, 1000);
+}
+
+async function challengeStartPhase(idx) {
+  if (!challengeInterval && idx > 0) return;
+  const phase = CHALLENGE_PHASES[idx];
+  await playScript(phase.id);
+  document.getElementById('speedSlider').value = phase.speedFrom;
+  document.getElementById('speedVal').textContent = phase.speedFrom + '%';
+  await api('/hamp/velocity', 'PUT', { velocity: phase.speedFrom });
+  document.getElementById('phaseInline').textContent = '▸ ' + phase.name.toUpperCase();
+  // Provokation beim Phasenwechsel
+  const taunts = [
+    'Noch geht es. 😏', 'Schon warm?', 'Das war erst der Anfang.',
+    'Immer noch dabei?', 'Beeindruckend. Fast.', 'Jetzt wird es ernst.',
+    'Du kannst nicht aufhören.', 'Weiter. Immer weiter.', 'Kein Erbarmen. 💀'
+  ];
+  showComment(taunts[Math.min(idx, taunts.length - 1)]);
 }
 
 // Zufall
@@ -1519,6 +1643,7 @@ async function cdStartPhase(idx) {
 
 function skipPhase() {
   if (timerInterval) { timerSecsLeft = 1; return; }
+  if (challengeInterval) { challengePhaseSecs = 1; return; }
   if (countdownInterval) {
     // Nächste Countdown-Phase überspringen
     cdPhaseSecsLeft = 1;
@@ -1647,6 +1772,9 @@ function toggleMic() {
 // HILFSFUNKTIONEN
 // ═══════════════════════════════════════════════════════════
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Bestenliste beim Laden anzeigen
+(function() { try { renderRecords(); } catch(e) {} })();
 
 function fmt(s) {
   const m = Math.floor(s / 60), sec = s % 60;
