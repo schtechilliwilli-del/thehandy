@@ -151,10 +151,17 @@
     <input type="range" id="depthMinSlider" min="0" max="80" value="5" oninput="onDepthChange()" disabled />
     <span class="slider-val" id="depthMinVal">5%</span>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
+  <div style="display:flex;gap:8px;margin-bottom:8px;">
     <button id="btnAutoSoft"    onclick="setAutoMode('soft')"    class="btn-auto">🌊 Soft</button>
     <button id="btnAutoMedium"  onclick="setAutoMode('medium')"  class="btn-auto">⚡ Mittel</button>
     <button id="btnAutoNomercy" onclick="setAutoMode('nomercy')" class="btn-auto">💀 No Mercy</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
+      <input type="checkbox" id="manualLock" onchange="toggleManualLock()" style="width:15px;height:15px;accent-color:var(--accent2);" />
+      <span>Manuell sperren</span>
+    </label>
+    <span id="manualLockLabel" style="font-size:0.7rem;color:var(--accent2);font-family:'Space Mono',monospace;display:none;">▸ GESPERRT</span>
   </div>
   <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress-info">
@@ -164,7 +171,7 @@
   <div class="claude-box" id="claudeComment">Wähle ein Skript und verbinde dein Gerät.</div>
   <div class="timer-inline" id="timerInline"></div>
   <div class="phase-inline" id="phaseInline"></div>
-  <button class="btn-skip" id="btnSkip" onclick="skipPhase()">⏭ Phase überspringen</button>
+  <button class="btn-skip" id="btnSkip" onclick="skipPhase()">⏭ Skript/Phase überspringen</button>
 </div>
 
 <!-- Pause Timer (Milking Hard) -->
@@ -202,6 +209,32 @@
   </div>
 </div>
 
+<!-- Oh Gott Settings -->
+<div class="card" id="ohGottCard" style="display:none;">
+  <div class="card-title">💦 Oh Gott – Einstellungen</div>
+  <div class="slider-row">
+    <span class="slider-label">Tiefe (min)</span>
+    <input type="range" id="ogDepthMin" min="0" max="80" value="0" oninput="ogDepthChange()" style="flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;" />
+    <span class="slider-val" id="ogDepthMinVal">0%</span>
+  </div>
+  <div class="slider-row">
+    <span class="slider-label">Tiefe (max)</span>
+    <input type="range" id="ogDepthMax" min="20" max="100" value="100" oninput="ogDepthChange()" style="flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;" />
+    <span class="slider-val" id="ogDepthMaxVal">100%</span>
+  </div>
+  <div class="slider-row" style="margin-top:4px;">
+    <span class="slider-label">Pause</span>
+    <input type="range" id="ogPause" min="0" max="8" value="0" step="1" oninput="document.getElementById('ogPauseVal').textContent=this.value==0?'Aus':this.value+'s'" style="flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;" />
+    <span class="slider-val" id="ogPauseVal">Aus</span>
+  </div>
+  <div class="pause-btns" style="margin-top:6px;">
+    <button class="btn-pause-quick" onclick="document.getElementById('ogPause').value=0;document.getElementById('ogPauseVal').textContent='Aus'">Aus</button>
+    <button class="btn-pause-quick" onclick="document.getElementById('ogPause').value=2;document.getElementById('ogPauseVal').textContent='2s'">2s</button>
+    <button class="btn-pause-quick" onclick="document.getElementById('ogPause').value=4;document.getElementById('ogPauseVal').textContent='4s'">4s</button>
+    <button class="btn-pause-quick" onclick="document.getElementById('ogPause').value=6;document.getElementById('ogPauseVal').textContent='6s'">6s</button>
+  </div>
+</div>
+
 <!-- Modi -->
 <div class="card">
   <div class="card-title">▸ Modi</div>
@@ -233,9 +266,10 @@
 
 <!-- Happy End -->
 <div class="card" id="happyEndCard">
-  <div class="card-title">▸ Wie weiter?</div>
-  <button class="btn-happy" onclick="happyChoice('harder')" style="background:rgba(192,132,252,0.1);border:1px solid var(--accent);color:var(--text);">💪 Härter!</button>
-  <button class="btn-happy" onclick="happyChoice('ichkomme')" style="background:rgba(248,113,113,0.1);border:1px solid var(--danger);color:var(--danger);">💥 Ich komme!</button>
+  <div class="card-title">▸ Und jetzt?</div>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;text-align:center;">Du hast es bis zum Ende geschafft…</p>
+  <button class="btn-happy" onclick="happyChoice('ichkomme')" style="background:rgba(248,113,113,0.15);border:2px solid var(--danger);color:var(--danger);font-size:1.05rem;">💥 Ich komme!!</button>
+  <button class="btn-happy" onclick="happyChoice('hoernichtauf')" style="background:rgba(192,132,252,0.15);border:2px solid var(--accent);color:var(--accent);font-size:1.05rem;">🔁 Hör nicht auf!!</button>
 </div>
 
 <!-- Befehl -->
@@ -385,17 +419,23 @@ const SCRIPTS = [
   },
 ];
 
-const COUNTDOWN_SEQ = [
-  {pct:0,  id:'pronebone'},
-  {pct:15, id:'edging_wurzel'},
-  {pct:30, id:'edging_stamm'},
-  {pct:45, id:'edging_top'},
-  {pct:58, id:'deepthroat'},
-  {pct:70, id:'deep_seeding'},
-  {pct:82, id:'milking_hard'},
-  {pct:92, id:'keep_riding'},
-  {pct:97, id:'ich_komme'},
+// Countdown-Phasen: jede Phase hat ein Skript, Speed-Start, Speed-Ende
+// Die Gewichte bestimmen wie lange jede Phase beim jeweiligen Countdown dauert
+// Frühe Phasen sind lang & sanft, späte kurz & intensiv
+const COUNTDOWN_PHASES = [
+  { id: 'pronebone',     name: 'Pronebone',     weight: 0.18, speedFrom:  8, speedTo: 18 },
+  { id: 'edging_wurzel', name: 'Edging Wurzel',  weight: 0.14, speedFrom: 15, speedTo: 25 },
+  { id: 'edging_stamm',  name: 'Edging Stamm',   weight: 0.16, speedFrom: 20, speedTo: 32 },
+  { id: 'keep_riding',   name: 'Keep Riding',    weight: 0.12, speedFrom: 22, speedTo: 35 },
+  { id: 'edging_top',    name: 'Edging Top',     weight: 0.12, speedFrom: 28, speedTo: 42 },
+  { id: 'deepthroat',    name: 'Deepthroat',     weight: 0.10, speedFrom: 35, speedTo: 52 },
+  { id: 'deep_seeding',  name: 'Deep Seeding',   weight: 0.09, speedFrom: 42, speedTo: 62 },
+  { id: 'squat_ride',    name: 'Squat Ride',     weight: 0.05, speedFrom: 55, speedTo: 72 },
+  { id: 'milking_hard',  name: 'Milking Hard',   weight: 0.04, speedFrom: 65, speedTo: 85 },
 ];
+
+// Legacy – nicht mehr genutzt
+const COUNTDOWN_SEQ = [];
 
 const TIMER_PHASES = [
   {name:'Edging Stamm', id:'edging_stamm', dur:120},
@@ -592,6 +632,8 @@ async function playScript(scriptId) {
   startProgress();
   startRhythm(scriptId);
   startPresets(scriptId);
+  // Skip-Button immer anzeigen wenn läuft
+  document.getElementById('btnSkip').style.display = 'block';
 }
 
 
@@ -667,9 +709,39 @@ function setAutoMode(level) {
     startPresets(currentScriptId);
   }
   showComment(cfg.comment);
+
+  // Timer-Anzeige wiederherstellen falls läuft
+  if (timerInterval || countdownInterval) {
+    document.getElementById('timerInline').style.display = 'block';
+    document.getElementById('phaseInline').style.display = 'block';
+    document.getElementById('btnSkip').style.display = 'block';
+  }
 }
 
 function toggleAutoMode() { /* legacy – nicht mehr genutzt */ }
+
+function toggleManualLock() {
+  const locked = document.getElementById('manualLock').checked;
+  document.getElementById('manualLockLabel').style.display = locked ? 'inline' : 'none';
+  if (locked) {
+    // Auto komplett aus, manuell dauerhaft gesperrt
+    if (autoModeActive) {
+      autoModeActive = false;
+      autoModeLevel = null;
+      if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
+      stopPresets();
+      ['btnAutoSoft','btnAutoMedium','btnAutoNomercy'].forEach(id =>
+        document.getElementById(id).classList.remove('active-soft','active-medium','active-nomercy')
+      );
+    }
+    manualOverride = true;
+    if (manualOverrideTimer) { clearTimeout(manualOverrideTimer); manualOverrideTimer = null; }
+    showComment('Manuell gesperrt – kein Auto-Eingriff.');
+  } else {
+    manualOverride = false;
+    showComment('Sperre aufgehoben.');
+  }
+}
 
 async function runAutoVariation() {
   if (!autoModeActive || !isPlaying || !autoModeLevel) return;
@@ -739,10 +811,12 @@ let manualOverrideTimer = null;
 function setManualOverride() {
   manualOverride = true;
   if (manualOverrideTimer) clearTimeout(manualOverrideTimer);
-  // Auto-Wiederholung nur wenn Auto-Modus aktiv ist
-  if (!autoModeActive) return;
+  // Wenn Manuell gesperrt: kein Auto-Rückfall
+  const locked = document.getElementById('manualLock') && document.getElementById('manualLock').checked;
+  if (!autoModeActive || locked) return;
   manualOverrideTimer = setTimeout(() => {
-    if (autoModeActive) {
+    const stillLocked = document.getElementById('manualLock') && document.getElementById('manualLock').checked;
+    if (autoModeActive && !stillLocked) {
       manualOverride = false;
       if (isPlaying) {
         if (autoModeTimer) clearTimeout(autoModeTimer);
@@ -883,14 +957,15 @@ async function startRhythm(scriptId) {
 
     case 'milking_hard': {
       // Zufallsmix: schnell, Pause, halb, voll
-      const pauseMs = parseInt(document.getElementById('pauseSlider').value) * 1000;
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
+        const pauseMs = parseInt(document.getElementById('pauseSlider').value) * 1000; // live lesen!
         const r = Math.random();
         if (r < 0.3) {
           // Pause
           await applyVelocity(getSpeedMin());
           rhythmTimeout = setTimeout(async () => {
+            if (!isPlaying || currentScriptId !== scriptId) return;
             await applyVelocity(randSpeed());
             rhythmTimeout = setTimeout(run, 800 + Math.random() * 1000);
           }, pauseMs);
@@ -966,6 +1041,9 @@ async function stopAll(showMsg = true) {
     document.getElementById('btnRandom').querySelector('.f-desc').textContent = 'Skript wechselt zufällig';
   }
 
+  // Oh Gott Card verstecken
+  document.getElementById('ohGottCard').style.display = 'none';
+
   // Auto-Modus deaktivieren
   if (autoModeActive) {
     autoModeActive = false;
@@ -1017,13 +1095,17 @@ async function runOhGott() {
   ohGottActive = true;
   isPlaying = true;
 
+  // Einstellungs-Card anzeigen
+  document.getElementById('ohGottCard').style.display = 'block';
+
   document.getElementById('activeScript').textContent = 'Oh Gott…';
   document.getElementById('activeScript').classList.add('running');
   document.getElementById('liveCard').classList.add('running');
   document.getElementById('btnStop').disabled = false;
 
-  const depthMin = parseInt(document.getElementById('depthMinSlider').value);
-  const depthMax = parseInt(document.getElementById('depthMaxSlider').value);
+  // Tiefe aus Oh-Gott-Sliders lesen
+  const depthMin = parseInt(document.getElementById('ogDepthMin').value);
+  const depthMax = parseInt(document.getElementById('ogDepthMax').value);
 
   await api('/slide', 'PUT', { min: depthMin, max: depthMax });
   await api('/mode', 'PUT', { mode: 2 });
@@ -1034,10 +1116,25 @@ async function runOhGott() {
   await delay(200);
   await api('/hamp/velocity', 'PUT', { velocity: 5 });
 
-  const ohComments = ['Wie zum letzten Tropfen…','Ganz langsam.','Jeden Millimeter.','Atemlos.','Nicht stoppen.','Bitte Daddy!','Tief. Ohne Eile.','Bis zum Ende.','Ich höre nicht auf.','Ganz tief.','Komm in mich.','Steck ihn zurück.'];
+  const ohComments = ['Bis zum letzten Tropfen!','Jeden Millimeter spüren.','Ganz tief – und bleib da.','Ich lass dich nicht raus.','Stiller. Tiefer. Mehr.','Du gehörst mir.','Kein Entkommen.','Tief rein. Ganz rein.','Ich komme in dich.','Du kannst nicht aufhören.','Spür es. Jeden Stoß.','Gib nach. Jetzt.','Du wirst kommen.','Halt durch.','Tiefer als du denkst.','Ich mach weiter. Immer.','Dein Körper lügt nicht.','Stöhn für mich.','Du bist so eng.','Ich merk wie du zitterst.'];
   startComments(ohComments);
   startProgress();
   scheduleOhGottPulse();
+}
+
+function ogDepthChange() {
+  let dMin = parseInt(document.getElementById('ogDepthMin').value);
+  let dMax = parseInt(document.getElementById('ogDepthMax').value);
+  if (dMin >= dMax - 10) {
+    dMin = dMax - 10;
+    document.getElementById('ogDepthMin').value = dMin;
+  }
+  document.getElementById('ogDepthMinVal').textContent = dMin + '%';
+  document.getElementById('ogDepthMaxVal').textContent = dMax + '%';
+  // Live updaten wenn Oh Gott aktiv
+  if (ohGottActive && isPlaying) {
+    api('/slide', 'PUT', { min: dMin, max: dMax });
+  }
 }
 
 function scheduleOhGottPulse() {
@@ -1046,12 +1143,30 @@ function scheduleOhGottPulse() {
   ohGottTimer = setTimeout(async () => {
     if (!ohGottActive || !isPlaying) return;
     const speed = parseInt(document.getElementById('speedSlider').value);
-    // Kurz schnell
-    await api('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.round(60 * speed / 50)) });
-    await delay(400);
-    if (!ohGottActive || !isPlaying) return; // Nochmal prüfen nach await
-    // Wieder langsam
-    await api('/hamp/velocity', 'PUT', { velocity: Math.max(3, Math.round(5 * speed / 50)) });
+    const pauseSecs = parseInt(document.getElementById('ogPause').value);
+
+    if (pauseSecs > 0 && Math.random() < 0.5) {
+      // Pause: komplett stoppen
+      await api('/hamp/velocity', 'PUT', { velocity: 0 });
+      await api('/hamp/stop', 'PUT', {});
+      await delay(pauseSecs * 1000);
+      if (!ohGottActive || !isPlaying) return;
+      // Wieder anlaufen
+      await api('/mode', 'PUT', { mode: 2 });
+      await delay(100);
+      await api('/hamp/start', 'PUT', {});
+      await delay(400);
+      if (!ohGottActive || !isPlaying) return;
+      await api('/hamp/velocity', 'PUT', { velocity: Math.max(3, Math.round(5 * speed / 50)) });
+      showComment('…weiter.');
+    } else {
+      // Kurzer Puls: schnell dann wieder langsam
+      await api('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.round(60 * speed / 50)) });
+      await delay(400);
+      if (!ohGottActive || !isPlaying) return;
+      await api('/hamp/velocity', 'PUT', { velocity: Math.max(3, Math.round(5 * speed / 50)) });
+    }
+
     if (!ohGottActive || !isPlaying) return;
     scheduleOhGottPulse();
   }, wait);
@@ -1317,66 +1432,146 @@ function showCountdownPicker() {
   p.style.display = p.style.display === 'none' ? 'block' : 'none';
 }
 
+// Countdown State
+let cdPhaseIdx = 0;
+let cdPhaseSecsLeft = 0;
+let cdPhaseDurations = []; // berechnete Sekunden pro Phase
+
 async function startCountdown(mins) {
   document.getElementById('countdownPicker').style.display = 'none';
   if (!connected) return;
+
   countdownTotal = mins * 60;
   countdownLeft = countdownTotal;
+  cdPhaseIdx = 0;
+
+  // Phasendauern berechnen aus Gewichten
+  cdPhaseDurations = COUNTDOWN_PHASES.map(p => Math.round(p.weight * countdownTotal));
+  // Rundungsfehler auf letzte Phase geben
+  const sum = cdPhaseDurations.reduce((a,b) => a+b, 0);
+  cdPhaseDurations[cdPhaseDurations.length - 1] += countdownTotal - sum;
+  cdPhaseSecsLeft = cdPhaseDurations[0];
+
   document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
   document.getElementById('timerInline').style.display = 'block';
   document.getElementById('phaseInline').style.display = 'block';
   document.getElementById('btnSkip').style.display = 'block';
 
-  await playScript(COUNTDOWN_SEQ[0].id);
+  await cdStartPhase(0);
 
   countdownInterval = setInterval(async () => {
-    if (!countdownInterval) return; // wurde gestoppt während await lief
-    countdownLeft--;
-    document.getElementById('timerInline').textContent = fmt(countdownLeft);
-    const pct = ((countdownTotal - countdownLeft) / countdownTotal) * 100;
+    if (!countdownInterval) return;
 
-    // Geschwindigkeit steigern
-    const spd = Math.min(100, Math.round(20 + pct * 0.8));
-    document.getElementById('speedSlider').value = spd;
-    await onSpeedChange(spd);
+    countdownLeft--;
+    cdPhaseSecsLeft--;
+
+    // Gesamtzeit anzeigen
+    document.getElementById('timerInline').textContent = fmt(countdownLeft);
+
+    // Innerhalb der Phase: Geschwindigkeit interpolieren
+    if (!manualOverride) {
+      const phase = COUNTDOWN_PHASES[cdPhaseIdx];
+      const phaseDur = cdPhaseDurations[cdPhaseIdx];
+      const elapsed = phaseDur - cdPhaseSecsLeft;
+      const progress = Math.min(1, elapsed / Math.max(1, phaseDur));
+      const spd = Math.round(phase.speedFrom + (phase.speedTo - phase.speedFrom) * progress);
+      document.getElementById('speedSlider').value = spd;
+      document.getElementById('speedVal').textContent = spd + '%';
+      await api('/hamp/velocity', 'PUT', { velocity: spd });
+    }
 
     // Phasenwechsel
-    for (let i = COUNTDOWN_SEQ.length - 1; i >= 0; i--) {
-      if (pct >= COUNTDOWN_SEQ[i].pct) {
-        const nid = COUNTDOWN_SEQ[i].id;
-        if (currentScriptId !== nid) {
-          await playScript(nid);
-          const s = SCRIPTS.find(x=>x.id===nid);
-          document.getElementById('phaseInline').textContent = '▸ ' + (s?.name||'').toUpperCase();
-        }
-        break;
+    if (cdPhaseSecsLeft <= 0) {
+      cdPhaseIdx++;
+      if (cdPhaseIdx < COUNTDOWN_PHASES.length) {
+        cdPhaseSecsLeft = cdPhaseDurations[cdPhaseIdx];
+        await cdStartPhase(cdPhaseIdx);
       }
     }
 
+    // Ende
     if (countdownLeft <= 0) {
       clearInterval(countdownInterval);
       countdownInterval = null;
       hideTimer();
+      // Letztes Skript: milking_hard auf max
       await playScript('milking_hard');
+      document.getElementById('speedSlider').value = 90;
+      document.getElementById('speedVal').textContent = '90%';
+      await api('/hamp/velocity', 'PUT', { velocity: 90 });
+      await delay(800);
       document.getElementById('happyEndCard').style.display = 'block';
       document.getElementById('happyEndCard').scrollIntoView({behavior:'smooth'});
     }
   }, 1000);
 }
 
+async function cdStartPhase(idx) {
+  if (!countdownInterval && idx > 0) return;
+  const phase = COUNTDOWN_PHASES[idx];
+  await playScript(phase.id);
+  // Speed auf Phasen-Start setzen
+  document.getElementById('speedSlider').value = phase.speedFrom;
+  document.getElementById('speedVal').textContent = phase.speedFrom + '%';
+  await api('/hamp/velocity', 'PUT', { velocity: phase.speedFrom });
+  document.getElementById('phaseInline').textContent = '▸ ' + phase.name.toUpperCase();
+}
+
 function skipPhase() {
-  if (timerInterval) timerSecsLeft = 1;
-  if (countdownInterval) countdownLeft = 1;
+  if (timerInterval) { timerSecsLeft = 1; return; }
+  if (countdownInterval) {
+    // Nächste Countdown-Phase überspringen
+    cdPhaseSecsLeft = 1;
+    return;
+  }
+  // Im Zufalls-Modus: nächstes Skript sofort
+  if (randomTimeout) {
+    clearTimeout(randomTimeout);
+    randomTimeout = null;
+    const ids = SCRIPTS.map(s => s.id).filter(id => id !== currentScriptId);
+    const pick = ids[Math.floor(Math.random() * ids.length)];
+    playScript(pick).then(() => {
+      if (randomTimeout !== null || autoModeActive) {
+        randomTimeout = setTimeout(async function next() {
+          if (!randomTimeout) return;
+          const ids2 = SCRIPTS.map(s => s.id);
+          const p = ids2[Math.floor(Math.random() * ids2.length)];
+          await playScript(p);
+          randomTimeout = setTimeout(next, Math.round(10000 + Math.random() * 25000));
+        }, Math.round(10000 + Math.random() * 25000));
+      }
+    });
+    return;
+  }
+  // Normaler Modus: nächstes Skript in der Liste
+  if (currentScriptId && isPlaying) {
+    const ids = SCRIPTS.map(s => s.id);
+    const idx = ids.indexOf(currentScriptId);
+    const next = ids[(idx + 1) % ids.length];
+    playScript(next);
+  }
 }
 
 async function happyChoice(c) {
   document.getElementById('happyEndCard').style.display = 'none';
-  if (c === 'harder') {
+  if (c === 'ichkomme') {
+    // Sanft ausklingen – ich_komme Skript, Geschwindigkeit runter
+    await playScript('ich_komme');
+    document.getElementById('speedSlider').value = 45;
+    document.getElementById('speedVal').textContent = '45%';
+    await api('/hamp/velocity', 'PUT', { velocity: 45 });
+    showComment('Lass es kommen… 💥');
+  } else if (c === 'hoernichtauf') {
+    // Weiter auf hohem Niveau – milking_hard auf max
     await playScript('milking_hard');
-    document.getElementById('speedSlider').value = 100;
-    await onSpeedChange(100);
-    showComment('Härter! 💪');
+    document.getElementById('speedSlider').value = 95;
+    document.getElementById('speedVal').textContent = '95%';
+    await api('/hamp/velocity', 'PUT', { velocity: 95 });
+    await delay(300);
+    await api('/hamp/velocity', 'PUT', { velocity: 95 });
+    showComment('Kein Ende. Niemals. 🔁');
   } else {
+    // Legacy
     await playScript('ich_komme');
     showComment('Ich komme! 💥');
   }
