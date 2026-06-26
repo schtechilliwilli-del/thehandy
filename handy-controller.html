@@ -263,56 +263,64 @@ let ohGottTimer = null;
 // ═══════════════════════════════════════════════════════════
 const SCRIPTS = [
   {
-    id: 'pronebone', name: 'Pronebone', icon: '〰️', desc: 'Langsam tief, schnell hoch',
-    comments: ['Tief und ruhig.', 'Lass dich fallen.', 'Kein Eilen.', 'Gleichmäßig.', 'Atme.', 'Nimm dir Zeit.'],
-    // Langsam runter (2.5s), kurz halten, schnell hoch (0.8s), langsam runter
+    id: 'pronebone', name: 'Pronebone', icon: '〰️', desc: 'Sanft & tief, langsam',
+    depthMin: 5, depthMax: 90, startSpeed: 18,
+    comments: ['Ganz ruhig.', 'Lass dich fallen.', 'Tief und gleichmäßig.', 'Kein Eilen.', 'Atme durch.', 'Jede Bewegung zählt.', 'Bleib hier.', 'So bleibt es.'],
     frames: [{t:0,p:100},{t:2500,p:0},{t:3000,p:0},{t:3800,p:100},{t:6300,p:0},{t:6800,p:0},{t:7600,p:100},{t:10100,p:0}]
   },
   {
-    id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze, präzise',
-    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.'],
-    frames: [{t:0,p:100},{t:600,p:70},{t:1200,p:100},{t:1800,p:70},{t:2400,p:100},{t:3000,p:70},{t:3600,p:100}]
+    id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis, tief & stabil',
+    depthMin: 0, depthMax: 35, startSpeed: 20,
+    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da. Genau da.', 'Bleib unten.'],
+    frames: [{t:0,p:0},{t:700,p:100},{t:1400,p:0},{t:2100,p:100},{t:2800,p:0},{t:3500,p:100},{t:4200,p:0}]
   },
   {
-    id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis-Stimulation, tief',
-    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.'],
-    frames: [{t:0,p:0},{t:700,p:30},{t:1400,p:0},{t:2100,p:30},{t:2800,p:0},{t:3500,p:30},{t:4200,p:0}]
+    id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mitte, rhythmisch',
+    depthMin: 25, depthMax: 75, startSpeed: 25,
+    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.', 'Nicht hetzen.', 'Kontrolliert.'],
+    frames: [{t:0,p:100},{t:800,p:0},{t:1600,p:100},{t:2400,p:0},{t:3200,p:100},{t:4000,p:0},{t:4800,p:100}]
   },
   {
-    id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mittlerer Bereich, rhythmisch',
-    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.'],
-    frames: [{t:0,p:60},{t:800,p:30},{t:1600,p:60},{t:2400,p:30},{t:3200,p:60},{t:4000,p:30},{t:4800,p:60}]
+    id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze',
+    depthMin: 50, depthMax: 100, startSpeed: 30,
+    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.', 'Nicht nachgeben.', 'Fast.'],
+    frames: [{t:0,p:100},{t:600,p:0},{t:1200,p:100},{t:1800,p:0},{t:2400,p:100},{t:3000,p:0},{t:3600,p:100}]
   },
   {
-    id: 'deepthroat', name: 'Deepthroat', icon: '↕️', desc: 'Voller Hub, tief und schnell',
-    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.'],
+    id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Voller Hub, ruhig',
+    depthMin: 5, depthMax: 95, startSpeed: 22,
+    comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.', 'Kein Ende.', 'Noch mehr.'],
+    frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}]
+  },
+  {
+    id: 'deepthroat', name: 'Deepthroat', icon: '↕️', desc: 'Voller Hub, schneller',
+    depthMin: 0, depthMax: 100, startSpeed: 35,
+    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Vollständig.'],
     frames: [{t:0,p:100},{t:500,p:0},{t:1000,p:100},{t:1500,p:0},{t:2000,p:100},{t:2500,p:0},{t:3000,p:100}]
   },
   {
-    id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
-    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.'],
-    // Wird dynamisch mit Pausen generiert
-    frames: null
-  },
-  {
     id: 'deep_seeding', name: 'Deep Seeding', icon: '🌊', desc: 'Schnell runter, langsam hoch',
-    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.'],
+    depthMin: 0, depthMax: 100, startSpeed: 40,
+    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.', 'Und wieder.', 'Keine Eile zurück.'],
     frames: [{t:0,p:100},{t:400,p:0},{t:3400,p:100},{t:3800,p:0},{t:6800,p:100},{t:7200,p:0},{t:10200,p:100}]
   },
   {
+    id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Schnell runter, langsam hoch oben',
+    depthMin: 0, depthMax: 100, startSpeed: 45,
+    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Weiter so.', 'Ja so.', 'Nicht stoppen.'],
+    frames: [{t:0,p:50},{t:400,p:0},{t:3600,p:50},{t:4000,p:0},{t:7200,p:50},{t:7600,p:0},{t:10800,p:50}]
+  },
+  {
+    id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
+    depthMin: 0, depthMax: 100, startSpeed: 55,
+    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.'],
+    frames: null
+  },
+  {
     id: 'ich_komme', name: 'Ich komme!', icon: '💥', desc: 'Schnell runter, extrem langsam hoch',
-    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Gib nach.'],
-    frames: [{t:0,p:100},{t:400,p:0},{t:5400,p:82},{t:5800,p:0},{t:10800,p:82},{t:11200,p:0},{t:16200,p:82}]
-  },
-  {
-    id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Schnell runter, langsam hoch 80-100%',
-    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Weiter so.'],
-    frames: [{t:0,p:80},{t:400,p:0},{t:3600,p:80},{t:4000,p:0},{t:7200,p:80},{t:7600,p:0},{t:10800,p:80}]
-  },
-  {
-    id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Langsam, tief, gleichmäßig',
-    comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.'],
-    frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}]
+    depthMin: 0, depthMax: 100, startSpeed: 60,
+    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Gib nach.', 'Nicht aufhalten.', 'Ja – jetzt.'],
+    frames: [{t:0,p:50},{t:400,p:0},{t:5400,p:50},{t:5800,p:0},{t:10800,p:50},{t:11200,p:0},{t:16200,p:50}]
   },
 ];
 
@@ -474,10 +482,20 @@ async function playScript(scriptId) {
   // Kommentare starten
   startComments(s.comments);
 
-  // HAMP starten
+  // HAMP starten - Slider auf Skript-Werte setzen wenn noch auf Standard
   const speed = parseInt(document.getElementById('speedSlider').value);
-  const depthMin = parseInt(document.getElementById('depthMinSlider').value);
-  const depthMax = parseInt(document.getElementById('depthMaxSlider').value);
+  // Tiefe aus Skript-Definition übernehmen
+  document.getElementById('depthMinSlider').value = s.depthMin;
+  document.getElementById('depthMaxSlider').value = s.depthMax;
+  document.getElementById('depthMinVal').textContent = s.depthMin + '%';
+  document.getElementById('depthMaxVal').textContent = s.depthMax + '%';
+  // Geschwindigkeit aus Skript wenn Slider noch auf 50% (Standard)
+  const currentSpeed = parseInt(document.getElementById('speedSlider').value);
+  const effectiveSpeed = currentSpeed === 50 ? s.startSpeed : currentSpeed;
+  document.getElementById('speedSlider').value = effectiveSpeed;
+  document.getElementById('speedVal').textContent = effectiveSpeed + '%';
+  const depthMin = s.depthMin;
+  const depthMax = s.depthMax;
 
   await api('/slide', 'PUT', { min: depthMin, max: depthMax });
   await api('/mode', 'PUT', { mode: 2 });
@@ -485,9 +503,9 @@ async function playScript(scriptId) {
   await api('/hamp/start', 'PUT', {});
   await delay(500); // Warten bis Gerät wirklich läuft
   // Velocity mehrfach senden zur Sicherheit
-  await api('/hamp/velocity', 'PUT', { velocity: speed });
+  await api('/hamp/velocity', 'PUT', { velocity: effectiveSpeed });
   await delay(200);
-  await api('/hamp/velocity', 'PUT', { velocity: speed });
+  await api('/hamp/velocity', 'PUT', { velocity: effectiveSpeed });
 
   // Progress Animation
   startProgress();
@@ -550,7 +568,7 @@ async function runOhGott() {
   await delay(200);
   await api('/hamp/velocity', 'PUT', { velocity: 5 });
 
-  const ohComments = ['Wie zum letzten Tropfen…','Ganz langsam.','Jeden Millimeter.','Atemlos.','Nicht stoppen.','Bitte Daddy!','Tief. Ohne Eile.','Bis zum Ende.','Ich höre nicht auf.','Ganz tief.'];
+  const ohComments = ['Wie zum letzten Tropfen…','Ganz langsam.','Jeden Millimeter.','Atemlos.','Nicht stoppen.','Bitte Daddy!','Tief. Ohne Eile.','Bis zum Ende.','Ich höre nicht auf.','Ganz tief.','Komm in mich.','Steck ihn zurück.'];
   startComments(ohComments);
   startProgress();
   scheduleOhGottPulse();
