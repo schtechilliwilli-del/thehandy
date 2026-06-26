@@ -434,7 +434,10 @@ async function api(endpoint, method = 'GET', body = null) {
   if (body) opts.body = JSON.stringify(body);
   try {
     const r = await fetch(PROXY + endpoint, opts);
-    return await r.json();
+    if (!r.ok) return null;
+    const text = await r.text();
+    if (!text) return null;
+    return JSON.parse(text);
   } catch(e) { return null; }
 }
 
@@ -534,7 +537,7 @@ function stopRhythm() {
 }
 
 async function applyVelocity(v) {
-  if (!isPlaying) return;
+  if (!isPlaying || !connected) return;
   if (manualOverride) {
     // Im manuellen Modus: direkt den aktuellen Slider-Wert nehmen
     const manual = parseInt(document.getElementById('speedSlider').value);
@@ -828,7 +831,7 @@ async function onRangeChange() {
   setManualOverride();
   let mn = parseInt(document.getElementById('speedMinSlider').value);
   let mx = parseInt(document.getElementById('speedSlider').value);
-  if (isPlaying) await api('/hamp/velocity', 'PUT', { velocity: mx });
+  if (isPlaying && connected) { await delay(100); await api('/hamp/velocity', 'PUT', { velocity: mx }); }
   // Min darf nicht größer als Max sein
   if (mn >= mx - 5) { mn = mx - 5; document.getElementById('speedMinSlider').value = mn; }
   document.getElementById('speedMinVal').textContent = mn + '%';
