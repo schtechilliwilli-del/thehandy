@@ -273,66 +273,110 @@ let ohGottTimer = null;
 // FUNSCRIPT DEFINITIONEN
 // Jedes Skript ist eine Liste von {t: ms, pos: 0-100}
 // ═══════════════════════════════════════════════════════════
+// Preset-Wechsel Engine
+let presetTimer = null;
+
+function stopPresets() {
+  if (presetTimer) { clearTimeout(presetTimer); presetTimer = null; }
+}
+
+async function applyPreset(preset) {
+  if (!isPlaying || manualOverride || !autoModeActive) return;
+  document.getElementById('depthMinSlider').value = preset.dMin;
+  document.getElementById('depthMaxSlider').value = preset.dMax;
+  document.getElementById('depthMinVal').textContent = preset.dMin + '%';
+  document.getElementById('depthMaxVal').textContent = preset.dMax + '%';
+  document.getElementById('speedSlider').value = preset.speed;
+  document.getElementById('speedVal').textContent = preset.speed + '%';
+  await api('/slide', 'PUT', { min: preset.dMin, max: preset.dMax });
+  await api('/hamp/velocity', 'PUT', { velocity: preset.speed });
+}
+
+function startPresets(scriptId) {
+  stopPresets();
+  const s = SCRIPTS.find(x => x.id === scriptId);
+  if (!s || !s.presets) return;
+  const run = async () => {
+    if (!isPlaying || !currentScriptId || currentScriptId !== scriptId) return;
+    if (!manualOverride) {
+      const p = s.presets[Math.floor(Math.random() * s.presets.length)];
+      await applyPreset(p);
+    }
+    presetTimer = setTimeout(run, 2000 + Math.random() * 4000);
+  };
+  presetTimer = setTimeout(run, 3000 + Math.random() * 2000);
+}
+
 const SCRIPTS = [
   {
     id: 'pronebone', name: 'Pronebone', icon: '〰️', desc: 'Sanft & tief, langsam',
     depthMin: 5, depthMax: 90, startSpeed: 18,
     comments: ['Ganz ruhig.', 'Lass dich fallen.', 'Tief und gleichmäßig.', 'Kein Eilen.', 'Atme durch.', 'Jede Bewegung zählt.', 'Bleib hier.', 'So bleibt es.', 'Tiefer noch.', 'Ja genau so.'],
-    frames: [{t:0,p:100},{t:2500,p:0},{t:3000,p:0},{t:3800,p:100},{t:6300,p:0},{t:6800,p:0},{t:7600,p:100},{t:10100,p:0}]
+    frames: [{t:0,p:100},{t:2500,p:0},{t:3000,p:0},{t:3800,p:100},{t:6300,p:0},{t:6800,p:0},{t:7600,p:100},{t:10100,p:0}],
+    presets: [{speed:15, dMin:5,  dMax:90}, {speed:10, dMin:10, dMax:80}, {speed:22, dMin:5,  dMax:95}, {speed:8,  dMin:15, dMax:85}]
   },
   {
     id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis, tief & stabil',
     depthMin: 0, depthMax: 35, startSpeed: 20,
     comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da. Genau da.', 'Bleib unten.', 'Steck ihn wieder rein.', 'Ganz tief rein.'],
-    frames: [{t:0,p:0},{t:700,p:100},{t:1400,p:0},{t:2100,p:100},{t:2800,p:0},{t:3500,p:100},{t:4200,p:0}]
+    frames: [{t:0,p:0},{t:700,p:100},{t:1400,p:0},{t:2100,p:100},{t:2800,p:0},{t:3500,p:100},{t:4200,p:0}],
+    presets: [{speed:18, dMin:0,  dMax:30}, {speed:25, dMin:5,  dMax:40}, {speed:12, dMin:0,  dMax:25}, {speed:30, dMin:0,  dMax:35}]
   },
   {
     id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mitte, rhythmisch',
     depthMin: 25, depthMax: 75, startSpeed: 25,
     comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.', 'Nicht hetzen.', 'Kontrolliert.', 'Ja, so.', 'Weiter.'],
-    frames: [{t:0,p:100},{t:800,p:0},{t:1600,p:100},{t:2400,p:0},{t:3200,p:100},{t:4000,p:0},{t:4800,p:100}]
+    frames: [{t:0,p:100},{t:800,p:0},{t:1600,p:100},{t:2400,p:0},{t:3200,p:100},{t:4000,p:0},{t:4800,p:100}],
+    presets: [{speed:22, dMin:25, dMax:70}, {speed:30, dMin:30, dMax:75}, {speed:18, dMin:20, dMax:65}, {speed:35, dMin:25, dMax:80}]
   },
   {
     id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze',
     depthMin: 50, depthMax: 100, startSpeed: 30,
     comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.', 'Nicht nachgeben.', 'Fast.', 'Nur oben.', 'Bleib.'],
-    frames: [{t:0,p:100},{t:600,p:0},{t:1200,p:100},{t:1800,p:0},{t:2400,p:100},{t:3000,p:0},{t:3600,p:100}]
+    frames: [{t:0,p:100},{t:600,p:0},{t:1200,p:100},{t:1800,p:0},{t:2400,p:100},{t:3000,p:0},{t:3600,p:100}],
+    presets: [{speed:28, dMin:50, dMax:100}, {speed:35, dMin:55, dMax:100}, {speed:20, dMin:50, dMax:95}, {speed:40, dMin:60, dMax:100}]
   },
   {
     id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Voller Hub, ruhig',
     depthMin: 5, depthMax: 95, startSpeed: 22,
     comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.', 'Kein Ende.', 'Noch mehr.'],
-    frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}]
+    frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}],
+    presets: [{speed:20, dMin:5,  dMax:90}, {speed:28, dMin:0,  dMax:95}, {speed:15, dMin:10, dMax:85}, {speed:35, dMin:5,  dMax:100}]
   },
   {
     id: 'deepthroat', name: 'Deepthroat', icon: '↕️', desc: 'Voller Hub, schneller',
     depthMin: 0, depthMax: 100, startSpeed: 35,
     comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Vollständig.', 'Ganz rein.', 'Härter Daddy!'],
-    frames: [{t:0,p:100},{t:500,p:0},{t:1000,p:100},{t:1500,p:0},{t:2000,p:100},{t:2500,p:0},{t:3000,p:100}]
+    frames: [{t:0,p:100},{t:500,p:0},{t:1000,p:100},{t:1500,p:0},{t:2000,p:100},{t:2500,p:0},{t:3000,p:100}],
+    presets: [{speed:32, dMin:0,  dMax:100}, {speed:42, dMin:0,  dMax:100}, {speed:25, dMin:5,  dMax:95}, {speed:50, dMin:0,  dMax:100}]
   },
   {
     id: 'deep_seeding', name: 'Deep Seeding', icon: '🌊', desc: 'Schnell runter, langsam hoch',
     depthMin: 0, depthMax: 100, startSpeed: 40,
     comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.', 'Und wieder.', 'Keine Eile zurück.', 'Steck ihn rein.', 'Ganz tief.'],
-    frames: [{t:0,p:100},{t:400,p:0},{t:3400,p:100},{t:3800,p:0},{t:6800,p:100},{t:7200,p:0},{t:10200,p:100}]
+    frames: [{t:0,p:100},{t:400,p:0},{t:3400,p:100},{t:3800,p:0},{t:6800,p:100},{t:7200,p:0},{t:10200,p:100}],
+    presets: [{speed:38, dMin:0,  dMax:100}, {speed:28, dMin:0,  dMax:95}, {speed:45, dMin:5,  dMax:100}, {speed:32, dMin:0,  dMax:90}]
   },
   {
     id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Schnell runter, langsam hoch oben',
     depthMin: 0, depthMax: 100, startSpeed: 45,
     comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Weiter so.', 'Ja so.', 'Nicht stoppen.'],
-    frames: [{t:0,p:50},{t:400,p:0},{t:3600,p:50},{t:4000,p:0},{t:7200,p:50},{t:7600,p:0},{t:10800,p:50}]
+    frames: [{t:0,p:50},{t:400,p:0},{t:3600,p:50},{t:4000,p:0},{t:7200,p:50},{t:7600,p:0},{t:10800,p:50}],
+    presets: [{speed:40, dMin:0,  dMax:100}, {speed:50, dMin:5,  dMax:95}, {speed:32, dMin:0,  dMax:100}, {speed:55, dMin:0,  dMax:95}]
   },
   {
     id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
     depthMin: 0, depthMax: 100, startSpeed: 55,
     comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.', 'Härter Daddy!', 'Ja – so!'],
-    frames: null
+    frames: null,
+    presets: [{speed:50, dMin:0,  dMax:100}, {speed:60, dMin:5,  dMax:95}, {speed:40, dMin:0,  dMax:100}, {speed:70, dMin:0,  dMax:100}]
   },
   {
     id: 'ich_komme', name: 'Ich komme!', icon: '💥', desc: 'Schnell runter, extrem langsam hoch',
     depthMin: 0, depthMax: 100, startSpeed: 60,
     comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Gib nach.', 'Nicht aufhalten.', 'Ja – jetzt.', 'Komm in mich.', 'Jetzt!'],
-    frames: [{t:0,p:50},{t:400,p:0},{t:5400,p:50},{t:5800,p:0},{t:10800,p:50},{t:11200,p:0},{t:16200,p:50}]
+    frames: [{t:0,p:50},{t:400,p:0},{t:5400,p:50},{t:5800,p:0},{t:10800,p:50},{t:11200,p:0},{t:16200,p:50}],
+    presets: [{speed:55, dMin:0,  dMax:100}, {speed:45, dMin:0,  dMax:95}, {speed:65, dMin:5,  dMax:100}, {speed:50, dMin:0,  dMax:100}]
   },
 ];
 
@@ -474,6 +518,7 @@ async function playScript(scriptId) {
 
   // Rhythmus stoppen aber Gerät läuft weiter
   stopRhythm();
+  stopPresets();
   if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
 
@@ -532,6 +577,7 @@ async function playScript(scriptId) {
   // Progress Animation
   startProgress();
   startRhythm(scriptId);
+  startPresets(scriptId);
 }
 
 
@@ -548,15 +594,21 @@ function toggleAutoMode() {
   if (autoModeActive) {
     manualOverride = false;
     if (autoModeTimer) clearTimeout(autoModeTimer);
-    runAutoVariation();
+    if (isPlaying) {
+      runAutoVariation();
+      startPresets(currentScriptId);
+    }
+    showComment('Auto aktiv.');
   } else {
     if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
+    stopPresets();
+    manualOverride = true;
+    showComment('Manuell.');
   }
 }
 
 async function runAutoVariation() {
   if (!autoModeActive || !isPlaying) {
-    autoModeTimer = setTimeout(runAutoVariation, 2000);
     return;
   }
 
@@ -607,7 +659,7 @@ function stopRhythm() {
 
 async function applyVelocity(v) {
   if (!isPlaying || !connected) return;
-  if (manualOverride) {
+  if (manualOverride || !autoModeActive) {
     // Im manuellen Modus: direkt den aktuellen Slider-Wert nehmen
     const manual = parseInt(document.getElementById('speedSlider').value);
     await api('/hamp/velocity', 'PUT', { velocity: manual });
@@ -620,20 +672,22 @@ async function applyVelocity(v) {
   await api('/hamp/velocity', 'PUT', { velocity: clamped });
 }
 
-let manualOverride = false;
+let manualOverride = true; // Manuell ist Standard
 let manualOverrideTimer = null;
 
 function setManualOverride() {
   manualOverride = true;
   if (manualOverrideTimer) clearTimeout(manualOverrideTimer);
   manualOverrideTimer = setTimeout(() => {
-    manualOverride = false;
-    // Auto-Modus wieder aktivieren wenn Checkbox gesetzt
-    if (autoModeActive && isPlaying) {
-      if (autoModeTimer) clearTimeout(autoModeTimer);
-      runAutoVariation();
+    if (autoModeActive) {
+      manualOverride = false;
+      if (isPlaying) {
+        if (autoModeTimer) clearTimeout(autoModeTimer);
+        runAutoVariation();
+        startPresets(currentScriptId);
+      }
     }
-  }, 8000);
+  }, 5000);
 }
 
 function getSpeedMin() {
@@ -821,6 +875,7 @@ async function stopAll(showMsg = true) {
 
   // Alle Timer stoppen
   stopRhythm();
+  stopPresets();
   if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
   if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
