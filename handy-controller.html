@@ -973,37 +973,37 @@ async function startRhythm(scriptId) {
     }
 
     case 'squat_ride': {
-      // Trick: slide-Fenster kollabieren um Richtung zu erzwingen
-      // Runter = slide auf {min:0, max:5}  → Gerät fährt zu 0%, top speed
-      // Hoch   = slide auf {min:0, max:top} → Gerät fährt zu top%, slow speed
-      let sqPhase = 'down'; // 'down' | 'up'
+      // Zwei klar getrennte Phasen über volle Hübe
+      // Runter: {min:0, max:100} + max speed → Gerät schlägt nach unten durch
+      // Hoch:   {min:70, max:100} + min speed → Gerät kriecht langsam nach oben
+      // Durch den großen Hub kein Rattern
+      let sqPhase = 'down';
 
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
         const mx = getSpeedMax();
         const mn = Math.max(8, getSpeedMin());
-        // Obere Zielposition: zufällig 70–80%
-        const topPos = Math.round(70 + Math.random() * 10);
+        const topPos = Math.round(70 + Math.random() * 10); // 70–80%
 
         if (sqPhase === 'down') {
-          // ── Runter: Fenster auf 0–5%, max speed → Gerät muss zu 0 ──
+          // Voller Hub, Max-Speed → läuft sauber bis ganz unten
           await api('/hamp/velocity', 'PUT', { velocity: mx });
-          await api('/slide', 'PUT', { min: 0, max: 5 });
-          // Zeit bis unten: bei speed 50 ca. 800ms, skaliert
-          const downMs = Math.round(900 * (50 / Math.max(mx, 15)));
+          await api('/slide', 'PUT', { min: 0, max: 100 });
+          // Warten bis Gerät unten angekommen ist (eine halbe Periode)
+          const downMs = Math.round(1800 * (50 / Math.max(mx, 15)));
           sqPhase = 'up';
           rhythmTimeout = setTimeout(run, downMs);
         } else {
-          // ── Hoch: Fenster auf 0–topPos, slow speed → Gerät fährt langsam zu topPos ──
+          // Oberes Fenster setzen + Min-Speed → kriecht von 0 bis topPos
           await api('/hamp/velocity', 'PUT', { velocity: mn });
           await api('/slide', 'PUT', { min: 0, max: topPos });
-          // Zeit bis oben: je langsamer desto länger
-          const upMs = Math.round(topPos * 40 * (50 / Math.max(mn, 5)));
+          // Wartezeit proportional zur Strecke und Langsamkeit
+          const upMs = Math.round(topPos * 55 * (30 / Math.max(mn, 5)));
           sqPhase = 'down';
           rhythmTimeout = setTimeout(run, upMs);
         }
       };
-      rhythmTimeout = setTimeout(run, 400);
+      rhythmTimeout = setTimeout(run, 500);
       break;
     }
 
