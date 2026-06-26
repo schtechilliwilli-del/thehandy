@@ -559,14 +559,16 @@ async function hampStop() {
   try { await handyRequest('/hamp/stop', 'PUT', {}); } catch(e) {}
 }
 
-// HDSP: Positionssteuerung - xp=Position 0-100, vp=Geschwindigkeit 0-100
-// Slider skaliert die Geschwindigkeit
-async function hdspMove(xp, vp) {
+// HDSP: Position + Zeit - xp=Position 0-100, ms=Dauer in Millisekunden
+// Slider skaliert die Zeit (langsamer = mehr Zeit)
+async function hdspMove(xp, ms) {
   if (!isRunning) return;
   const slider = parseInt(document.getElementById('speedSlider').value);
-  const vel = Math.min(100, Math.max(1, Math.round(vp * (slider / 50))));
+  // Slider 50=normal, 100=doppelt so schnell (halbe Zeit), 10=sehr langsam (5x Zeit)
+  const factor = 100 / Math.max(10, slider);
+  const duration = Math.round(ms * factor);
   try {
-    await handyRequest('/hdsp/xpvp', 'PUT', { xp: Math.round(xp), vp: vel, stopOnTarget: false });
+    await handyRequest('/hdsp/xpt', 'PUT', { xp: Math.round(xp), t: duration, stopOnTarget: false });
   } catch(e) {}
 }
 
@@ -1097,41 +1099,44 @@ const TIMER_PHASES = [
 let timerSeconds = 0;
 let timerPhaseIdx = 0;
 
-function startTimer() {
+async function startTimer() {
   if (timerModeInterval) {
     clearInterval(timerModeInterval);
     timerModeInterval = null;
     document.getElementById('timerDisplayInline').style.display = 'none';
     document.getElementById('btnSkipPhase').style.display = 'none';
     document.getElementById('btnTimer').querySelector('.f-desc').textContent = '5min Edging-Zyklus';
-    stopScript();
+    await stopScript();
     return;
   }
   if (!connected) { showClaudeComment('Erst verbinden!'); return; }
-  
+
   timerPhaseIdx = 0;
   timerSeconds = 0;
-  document.getElementById('timerDisplayInline').style.display = 'none';
-    document.getElementById('btnSkipPhase').style.display = 'none';
-    document.getElementById('timerDisplayInline').style.display = 'block';
-    document.getElementById('btnSkipPhase').style.display = 'block';
+  document.getElementById('timerDisplayInline').style.display = 'block';
+  document.getElementById('btnSkipPhase').style.display = 'block';
   document.getElementById('btnTimer').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
-  
-  const runPhase = () => {
+
+  const runPhase = async () => {
     const phase = TIMER_PHASES[timerPhaseIdx];
     timerSeconds = phase.duration;
-    showClaudeComment('Phase: ' + phase.name + ' – ' + phase.duration + 's');
-    if (phase.script) runScript(phase.script);
-    else { stopScript(); showClaudeComment('Pause – atme tief durch 🌬'); }
+    if (phase.script) {
+      await runScript(phase.script);
+      showClaudeComment(phase.name + '.');
+    } else {
+      await stopScript(false);
+      showClaudeComment('Pause – atme durch.');
+    }
   };
-  
-  runPhase();
-  timerModeInterval = setInterval(() => {
+
+  await runPhase();
+
+  timerModeInterval = setInterval(async () => {
     timerSeconds--;
     document.getElementById('timerDisplayInline').textContent = formatTime(timerSeconds);
     if (timerSeconds <= 0) {
       timerPhaseIdx = (timerPhaseIdx + 1) % TIMER_PHASES.length;
-      runPhase();
+      await runPhase();
     }
   }, 1000);
 }
