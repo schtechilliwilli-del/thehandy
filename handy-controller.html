@@ -145,6 +145,13 @@
     <input type="range" id="depthMinSlider" min="0" max="80" value="5" oninput="onDepthChange()" disabled />
     <span class="slider-val" id="depthMinVal">5%</span>
   </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--muted);">
+      <input type="checkbox" id="autoMode" onchange="toggleAutoMode()" style="width:16px;height:16px;accent-color:var(--accent);" />
+      <span>Auto-Modus</span>
+    </label>
+    <span id="autoLabel" style="font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;display:none">▸ AKTIV</span>
+  </div>
   <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
   <div class="progress-info">
     <span class="active-label" id="activeScript">Kein Skript aktiv</span>
@@ -467,6 +474,7 @@ async function playScript(scriptId) {
 
   // Rhythmus stoppen aber Gerät läuft weiter
   stopRhythm();
+  if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
 
   const wasPlaying = isPlaying;
@@ -527,6 +535,67 @@ async function playScript(scriptId) {
 }
 
 
+
+// ═══════════════════════════════════════════════════════════
+// AUTO-MODUS
+// ═══════════════════════════════════════════════════════════
+let autoModeActive = false;
+let autoModeTimer = null;
+
+function toggleAutoMode() {
+  autoModeActive = document.getElementById('autoMode').checked;
+  document.getElementById('autoLabel').style.display = autoModeActive ? 'inline' : 'none';
+  if (autoModeActive) {
+    manualOverride = false;
+    if (autoModeTimer) clearTimeout(autoModeTimer);
+    runAutoVariation();
+  } else {
+    if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
+  }
+}
+
+async function runAutoVariation() {
+  if (!autoModeActive || !isPlaying) {
+    autoModeTimer = setTimeout(runAutoVariation, 2000);
+    return;
+  }
+
+  // Zufällige Variation aller Parameter
+  const r = Math.random();
+
+  if (r < 0.4) {
+    // Geschwindigkeit variieren
+    const mn = getSpeedMin();
+    const mx = getSpeedMax();
+    const newSpeed = Math.round(mn + Math.random() * (mx - mn));
+    document.getElementById('speedSlider').value = newSpeed;
+    document.getElementById('speedVal').textContent = newSpeed + '%';
+    await api('/hamp/velocity', 'PUT', { velocity: newSpeed });
+  } else if (r < 0.65) {
+    // Max Tiefe leicht variieren
+    const currentMax = parseInt(document.getElementById('depthMaxSlider').value);
+    const variation = Math.round((Math.random() - 0.5) * 20);
+    const newMax = Math.min(100, Math.max(20, currentMax + variation));
+    document.getElementById('depthMaxSlider').value = newMax;
+    document.getElementById('depthMaxVal').textContent = newMax + '%';
+    const dMin = parseInt(document.getElementById('depthMinSlider').value);
+    if (isPlaying) await api('/slide', 'PUT', { min: dMin, max: newMax });
+  } else if (r < 0.85) {
+    // Max Höhe leicht variieren
+    const currentMin = parseInt(document.getElementById('depthMinSlider').value);
+    const variation = Math.round((Math.random() - 0.5) * 15);
+    const newMin = Math.min(80, Math.max(0, currentMin + variation));
+    document.getElementById('depthMinSlider').value = newMin;
+    document.getElementById('depthMinVal').textContent = newMin + '%';
+    const dMax = parseInt(document.getElementById('depthMaxSlider').value);
+    if (isPlaying) await api('/slide', 'PUT', { min: newMin, max: dMax });
+  }
+  // else: nichts ändern – kurze Pause
+
+  // Nächste Variation in 3-10 Sekunden
+  autoModeTimer = setTimeout(runAutoVariation, 3000 + Math.random() * 7000);
+}
+
 // ═══════════════════════════════════════════════════════════
 // RHYTHMUS ENGINE
 // ═══════════════════════════════════════════════════════════
@@ -557,8 +626,14 @@ let manualOverrideTimer = null;
 function setManualOverride() {
   manualOverride = true;
   if (manualOverrideTimer) clearTimeout(manualOverrideTimer);
-  // Nach 8 Sekunden Inaktivität wieder automatisch
-  manualOverrideTimer = setTimeout(() => { manualOverride = false; }, 8000);
+  manualOverrideTimer = setTimeout(() => {
+    manualOverride = false;
+    // Auto-Modus wieder aktivieren wenn Checkbox gesetzt
+    if (autoModeActive && isPlaying) {
+      if (autoModeTimer) clearTimeout(autoModeTimer);
+      runAutoVariation();
+    }
+  }, 8000);
 }
 
 function getSpeedMin() {
@@ -746,6 +821,7 @@ async function stopAll(showMsg = true) {
 
   // Alle Timer stoppen
   stopRhythm();
+  if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
   if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
   if (ohGottTimer) { clearTimeout(ohGottTimer); ohGottTimer = null; }
