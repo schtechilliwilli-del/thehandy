@@ -535,7 +535,27 @@ function stopRhythm() {
 
 async function applyVelocity(v) {
   if (!isPlaying) return;
-  await api('/hamp/velocity', 'PUT', { velocity: Math.min(100, Math.max(5, Math.round(v))) });
+  if (manualOverride) {
+    // Im manuellen Modus: direkt den aktuellen Slider-Wert nehmen
+    const manual = parseInt(document.getElementById('speedSlider').value);
+    await api('/hamp/velocity', 'PUT', { velocity: manual });
+    return;
+  }
+  // Automatisch: innerhalb Min/Max begrenzen
+  const mn = getSpeedMin();
+  const mx = getSpeedMax();
+  const clamped = Math.min(mx, Math.max(mn, Math.round(v)));
+  await api('/hamp/velocity', 'PUT', { velocity: clamped });
+}
+
+let manualOverride = false;
+let manualOverrideTimer = null;
+
+function setManualOverride() {
+  manualOverride = true;
+  if (manualOverrideTimer) clearTimeout(manualOverrideTimer);
+  // Nach 8 Sekunden Inaktivität wieder automatisch
+  manualOverrideTimer = setTimeout(() => { manualOverride = false; }, 8000);
 }
 
 function getSpeedMin() {
@@ -548,6 +568,7 @@ function getSpeedBase() {
   return getSpeedMax();
 }
 function randSpeed() {
+  if (manualOverride) return parseInt(document.getElementById('speedSlider').value);
   const mn = getSpeedMin(), mx = getSpeedMax();
   return Math.round(mn + Math.random() * Math.max(0, mx - mn));
 }
@@ -804,6 +825,10 @@ async function onSpeedChange(val) {
 }
 
 async function onRangeChange() {
+  setManualOverride();
+  // Sofort aktuellen Max-Wert ans Gerät senden
+  const mx = getSpeedMax();
+  if (isPlaying) await api('/hamp/velocity', 'PUT', { velocity: mx });
   let mn = parseInt(document.getElementById('speedMinSlider').value);
   let mx = parseInt(document.getElementById('speedSlider').value);
   // Min darf nicht größer als Max sein
@@ -1000,9 +1025,9 @@ function toggleTimer() {
     timerSecsLeft--;
     document.getElementById('timerInline').textContent = fmt(timerSecsLeft);
 
-    // Geschwindigkeit innerhalb der Phase eskalieren
+    // Geschwindigkeit innerhalb der Phase eskalieren (nur wenn nicht manuell)
     const phase = TIMER_PHASES[timerPhaseIdx];
-    if (phase.id && timerSecsLeft > 0) {
+    if (phase.id && timerSecsLeft > 0 && !manualOverride) {
       const elapsed = phase.dur - timerSecsLeft;
       const progress = elapsed / phase.dur; // 0.0 → 1.0
       const mn = getSpeedMin();
