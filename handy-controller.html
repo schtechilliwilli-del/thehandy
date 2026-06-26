@@ -593,7 +593,7 @@ async function runAutoVariation() {
   // else: nichts ändern – kurze Pause
 
   // Nächste Variation in 3-10 Sekunden
-  autoModeTimer = setTimeout(runAutoVariation, 3000 + Math.random() * 7000);
+  autoModeTimer = setTimeout(runAutoVariation, 1500 + Math.random() * 3000);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -669,11 +669,11 @@ async function startRhythm(scriptId) {
           await applyVelocity(randSpeed()); // kurz schneller
           rhythmTimeout = setTimeout(async () => {
             await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 3000 + Math.random() * 4000);
+            rhythmTimeout = setTimeout(run, 1000 + Math.random() * 1500);
           }, 600 + Math.random() * 800);
         } else {
           await applyVelocity(base * (0.8 + Math.random() * 0.4));
-          rhythmTimeout = setTimeout(run, 2500 + Math.random() * 3000);
+          rhythmTimeout = setTimeout(run, 800 + Math.random() * 1200);
         }
       };
       rhythmTimeout = setTimeout(run, 2000);
@@ -691,11 +691,11 @@ async function startRhythm(scriptId) {
           await applyVelocity(randSpeed());
           rhythmTimeout = setTimeout(async () => {
             await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 2000 + Math.random() * 3000);
+            rhythmTimeout = setTimeout(run, 700 + Math.random() * 1000);
           }, 500);
         } else {
           await applyVelocity(base * (0.9 + Math.random() * 0.2));
-          rhythmTimeout = setTimeout(run, 1500 + Math.random() * 2500);
+          rhythmTimeout = setTimeout(run, 600 + Math.random() * 900);
         }
       };
       rhythmTimeout = setTimeout(run, 1500);
@@ -707,7 +707,7 @@ async function startRhythm(scriptId) {
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
         await applyVelocity(base * (0.85 + Math.random() * 0.3));
-        rhythmTimeout = setTimeout(run, 3000 + Math.random() * 4000);
+        rhythmTimeout = setTimeout(run, 1000 + Math.random() * 1500);
       };
       rhythmTimeout = setTimeout(run, 2000);
       break;
@@ -723,11 +723,11 @@ async function startRhythm(scriptId) {
           await applyVelocity(getSpeedMin());
           rhythmTimeout = setTimeout(async () => {
             await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 1500 + Math.random() * 2000);
+            rhythmTimeout = setTimeout(run, 500 + Math.random() * 800);
           }, 400 + Math.random() * 600);
         } else {
           await applyVelocity(base * (0.8 + Math.random() * 0.5));
-          rhythmTimeout = setTimeout(run, 800 + Math.random() * 1500);
+          rhythmTimeout = setTimeout(run, 400 + Math.random() * 600);
         }
       };
       rhythmTimeout = setTimeout(run, 1000);
@@ -742,7 +742,7 @@ async function startRhythm(scriptId) {
         rhythmTimeout = setTimeout(async () => {
           if (!isPlaying || currentScriptId !== scriptId) return;
           await applyVelocity(randSpeed()); // langsam
-          rhythmTimeout = setTimeout(run, 2500 + Math.random() * 2000);
+          rhythmTimeout = setTimeout(run, 800 + Math.random() * 1000);
         }, 400 + Math.random() * 400);
       };
       rhythmTimeout = setTimeout(run, 1000);
@@ -757,7 +757,7 @@ async function startRhythm(scriptId) {
         rhythmTimeout = setTimeout(async () => {
           if (!isPlaying || currentScriptId !== scriptId) return;
           await applyVelocity(randSpeed()); // langsam
-          rhythmTimeout = setTimeout(run, 2800 + Math.random() * 1500);
+          rhythmTimeout = setTimeout(run, 2400 + Math.random() * 600);
         }, 500);
       };
       rhythmTimeout = setTimeout(run, 800);
@@ -782,7 +782,7 @@ async function startRhythm(scriptId) {
           rhythmTimeout = setTimeout(run, 600 + Math.random() * 800);
         } else {
           await applyVelocity(base * (0.7 + Math.random() * 0.6));
-          rhythmTimeout = setTimeout(run, 500 + Math.random() * 1000);
+          rhythmTimeout = setTimeout(run, 300 + Math.random() * 500);
         }
       };
       rhythmTimeout = setTimeout(run, 500);
@@ -798,11 +798,11 @@ async function startRhythm(scriptId) {
           await applyVelocity(randSpeed());
           rhythmTimeout = setTimeout(async () => {
             await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 4000 + Math.random() * 3000);
+            rhythmTimeout = setTimeout(run, 1200 + Math.random() * 1500);
           }, 300);
         } else {
           await applyVelocity(base * (0.3 + Math.random() * 0.3));
-          rhythmTimeout = setTimeout(run, 3500 + Math.random() * 3000);
+          rhythmTimeout = setTimeout(run, 1000 + Math.random() * 1200);
         }
       };
       rhythmTimeout = setTimeout(run, 1500);
