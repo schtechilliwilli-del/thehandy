@@ -826,11 +826,9 @@ async function onSpeedChange(val) {
 
 async function onRangeChange() {
   setManualOverride();
-  // Sofort aktuellen Max-Wert ans Gerät senden
-  const mx = getSpeedMax();
-  if (isPlaying) await api('/hamp/velocity', 'PUT', { velocity: mx });
   let mn = parseInt(document.getElementById('speedMinSlider').value);
   let mx = parseInt(document.getElementById('speedSlider').value);
+  if (isPlaying) await api('/hamp/velocity', 'PUT', { velocity: mx });
   // Min darf nicht größer als Max sein
   if (mn >= mx - 5) { mn = mx - 5; document.getElementById('speedMinSlider').value = mn; }
   document.getElementById('speedMinVal').textContent = mn + '%';
