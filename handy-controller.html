@@ -289,7 +289,7 @@ const SCRIPTS = [
     speed: 30,
     strokeMin: 65,
     strokeMax: 95,
-    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.']
+    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Nicht nachgeben.', 'Fast.', 'Konzentrier dich.']
   },
   {
     id: 'edging_wurzel',
@@ -299,7 +299,7 @@ const SCRIPTS = [
     speed: 25,
     strokeMin: 5,
     strokeMax: 35,
-    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.']
+    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da.', 'Bleib unten.']
   },
   {
     id: 'edging_stamm',
@@ -309,7 +309,7 @@ const SCRIPTS = [
     speed: 30,
     strokeMin: 30,
     strokeMax: 70,
-    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte. Kontrolle.', 'Ausdauer.', 'Bewusst.']
+    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Nicht hetzen.', 'Kontrolliert.', 'Im Takt.']
   },
   {
     id: 'deepthroat',
@@ -319,7 +319,7 @@ const SCRIPTS = [
     speed: 75,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.']
+    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Vollständig.']
   },
   {
     id: 'milking_hard',
@@ -329,7 +329,7 @@ const SCRIPTS = [
     speed: 40,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.']
+    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.']
   },
   {
     id: 'deep_seeding',
@@ -339,7 +339,7 @@ const SCRIPTS = [
     speed: 35,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.']
+    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Und wieder.', 'Tiefer noch.', 'Keine Eile zurück.']
   },
   {
     id: 'ich_komme',
@@ -359,7 +359,7 @@ const SCRIPTS = [
     speed: 25,
     strokeMin: 78,
     strokeMax: 98,
-    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.']
+    comments: ['Oben.', 'Dein Tempo.', 'Bleib dran.', 'Reit es.', 'Tiefer.', 'Ja.', 'Nicht stoppen.', 'Weiter so.']
   },
   {
     id: 'keep_riding',
@@ -369,7 +369,7 @@ const SCRIPTS = [
     speed: 10,
     strokeMin: 5,
     strokeMax: 98,
-    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.']
+    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Nicht aufhalten.', 'Gib nach.', 'Ja – jetzt.']
   }
 ];
 
@@ -627,6 +627,7 @@ async function runScript(scriptId) {
 
 async function stopScript(showStopped = true) {
   isRunning = false;
+  ohGottRunning = false;
   currentScript = null;
   if (scriptInterval) { clearInterval(scriptInterval); scriptInterval = null; }
   await hampStop();
@@ -749,6 +750,20 @@ async function sendCommand() {
 
 
 
+
+// ─── Skip Phase ───────────────────────────────────────────────────────────────
+function skipPhase() {
+  if (countdownInterval) {
+    // Countdown: sofort zur nächsten Phase
+    countdownRemaining = 1; // wird beim nächsten Tick ausgelöst
+    showClaudeComment('Nächste Phase…');
+  } else if (timerModeInterval) {
+    // Timer: Phase sofort wechseln
+    timerSeconds = 1;
+    showClaudeComment('Weiter.');
+  }
+}
+
 // ─── Fernbedienung ────────────────────────────────────────────────────────────
 function getRemoteStep() {
   const s = document.getElementById('remoteStep');
@@ -839,7 +854,7 @@ async function ohGott() {
   await setHampSpeed(4);
   showClaudeComment('Ganz langsam. Jeden Moment spüren.');
   let commentIdx = 0;
-  const comments = ['Wie zum letzten Tropfen…', 'Ganz langsam. Jeder Moment zählt.', 'Tief. Ohne Eile.', 'Atemlos. Bis zum Ende.', 'Ich höre nicht auf.', 'Bitte Daddy!'];
+  const comments = ['Wie zum letzten Tropfen…', 'Ganz langsam.', 'Tief. Ohne Eile.', 'Atemlos.', 'Ich höre nicht auf.', 'Bitte Daddy!', 'Jeden Millimeter.', 'Nicht stoppen.', 'Ganz tief.', 'Bis zum Ende.'];
   if (scriptInterval) clearInterval(scriptInterval);
   scriptInterval = setInterval(() => {
     step += 0.15;
@@ -914,8 +929,9 @@ async function startCountdown(minutes) {
     countdownInterval = null;
     countdownRemaining = 0;
     await stopScript();
-    document.getElementById('timerDisplay').style.display = 'none';
-    document.getElementById('phaseDisplay').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
+    document.getElementById('phaseDisplayInline').style.display = 'none';
     document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Aufbau bis zum Ziel';
     showClaudeComment('Countdown gestoppt.');
     return;
@@ -923,7 +939,10 @@ async function startCountdown(minutes) {
 
   countdownTotal = minutes * 60;
   countdownRemaining = countdownTotal;
-  document.getElementById('timerDisplay').style.display = 'block';
+  document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'block';
+    document.getElementById('btnSkipPhase').style.display = 'block';
   document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
 
   // Erstes Skript starten
@@ -932,7 +951,7 @@ async function startCountdown(minutes) {
 
   countdownInterval = setInterval(async () => {
     countdownRemaining--;
-    document.getElementById('timerDisplay').textContent = formatTime(countdownRemaining);
+    document.getElementById('timerDisplayInline').textContent = formatTime(countdownRemaining);
 
     // Fortschritt in Prozent
     const pct = ((countdownTotal - countdownRemaining) / countdownTotal) * 100;
@@ -962,8 +981,9 @@ async function startCountdown(minutes) {
     if (countdownRemaining <= 0) {
       clearInterval(countdownInterval);
       countdownInterval = null;
-      document.getElementById('timerDisplay').style.display = 'none';
-      document.getElementById('phaseDisplay').style.display = 'none';
+      document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
+      document.getElementById('phaseDisplayInline').style.display = 'none';
       document.getElementById('btnCountdown').querySelector('.f-desc').textContent = 'Aufbau bis zum Ziel';
       // Milking Hard starten und Happy End anzeigen
       await runScript('milking_hard');
@@ -1000,14 +1020,18 @@ function startChallenge() {
     }
     document.getElementById('scoreDisplay').textContent = 
       'Session: ' + formatTime(s) + ' · Rekord: ' + formatTime(highScore);
-    document.getElementById('timerDisplay').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
     document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
     challengeSeconds = 0;
     return;
   }
   if (!isRunning) { showClaudeComment('Erst ein Skript starten!'); return; }
   challengeSeconds = 0;
-  document.getElementById('timerDisplay').style.display = 'block';
+  document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'block';
+    document.getElementById('btnSkipPhase').style.display = 'block';
   document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
   challengeInterval = setInterval(() => {
     challengeSeconds++;
@@ -1068,7 +1092,8 @@ function startTimer() {
   if (timerModeInterval) {
     clearInterval(timerModeInterval);
     timerModeInterval = null;
-    document.getElementById('timerDisplay').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
     document.getElementById('btnTimer').querySelector('.f-desc').textContent = '5min Edging-Zyklus';
     stopScript();
     return;
@@ -1077,7 +1102,10 @@ function startTimer() {
   
   timerPhaseIdx = 0;
   timerSeconds = 0;
-  document.getElementById('timerDisplay').style.display = 'block';
+  document.getElementById('timerDisplayInline').style.display = 'none';
+    document.getElementById('btnSkipPhase').style.display = 'none';
+    document.getElementById('timerDisplayInline').style.display = 'block';
+    document.getElementById('btnSkipPhase').style.display = 'block';
   document.getElementById('btnTimer').querySelector('.f-desc').textContent = 'Tippen zum Stoppen';
   
   const runPhase = () => {
@@ -1091,7 +1119,7 @@ function startTimer() {
   runPhase();
   timerModeInterval = setInterval(() => {
     timerSeconds--;
-    document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
+    document.getElementById('timerDisplayInline').textContent = formatTime(timerSeconds);
     if (timerSeconds <= 0) {
       timerPhaseIdx = (timerPhaseIdx + 1) % TIMER_PHASES.length;
       runPhase();
