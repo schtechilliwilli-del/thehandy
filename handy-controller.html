@@ -1555,12 +1555,15 @@ function skipPhase() {
 async function happyChoice(c) {
   document.getElementById('happyEndCard').style.display = 'none';
   if (c === 'ichkomme') {
-    // Sanft ausklingen – ich_komme Skript, Geschwindigkeit runter
+    // ich_komme Skript, dann Oh Gott Modus aktivieren
     await playScript('ich_komme');
     document.getElementById('speedSlider').value = 45;
     document.getElementById('speedVal').textContent = '45%';
     await api('/hamp/velocity', 'PUT', { velocity: 45 });
     showComment('Lass es kommen… 💥');
+    // Nach kurzer Verzögerung Oh Gott aktivieren
+    await delay(2000);
+    if (isPlaying) await runOhGott();
   } else if (c === 'hoernichtauf') {
     // Weiter auf hohem Niveau – milking_hard auf max
     await playScript('milking_hard');
