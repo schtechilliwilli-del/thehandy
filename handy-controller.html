@@ -1589,7 +1589,6 @@ function startComments(list) {
   let usedIdx = new Set();
 
   const getNext = () => {
-    if (aiCommentsActive) return null;
     // Pool neu aufbauen wenn Eskalation sich geändert hat
     pool = buildPool();
     // Alle benutzt? Reset
@@ -1603,7 +1602,8 @@ function startComments(list) {
     return pool[idx];
   };
 
-  showComment(list[0]);
+  // Ersten Text sofort anzeigen
+  showComment(pool[Math.floor(Math.random() * pool.length)]);
   commentTimer = setInterval(() => {
     const text = getNext();
     if (text) showComment(text);
