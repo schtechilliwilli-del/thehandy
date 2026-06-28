@@ -181,6 +181,23 @@
   <div class="timer-inline" id="timerInline"></div>
   <div class="phase-inline" id="phaseInline"></div>
   <button class="btn-skip" id="btnSkip" onclick="skipPhase()">⏭ Skript/Phase überspringen</button>
+
+  <!-- KI-Kommentare direkt darunter -->
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+    <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">▸ KI-KOMMENTARE</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button id="charZaertlich" onclick="setCharacter('zaertlich')" class="btn-auto">🌸 Zärtlich</button>
+      <button id="charDominant"  onclick="setCharacter('dominant')"  class="btn-auto">👑 Dominant</button>
+      <button id="charDirty"     onclick="setCharacter('dirty')"     class="btn-auto">🔥 Dirty</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
+        <input type="checkbox" id="aiEnabled" onchange="toggleAI()" style="width:15px;height:15px;accent-color:var(--success);" />
+        <span>KI generiert live neue Texte</span>
+      </label>
+      <span id="aiStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
+    </div>
+  </div>
 </div>
 
 <!-- Pause Timer (Milking Hard) -->
@@ -323,24 +340,6 @@
     <span style="font-size:0.65rem;color:var(--success);">── Tiefe</span>
   </div>
   <button onclick="resetStats()" style="margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:0.78rem;cursor:pointer;">↺ Statistiken zurücksetzen</button>
-</div>
-
-<!-- KI-Kommentare -->
-<div class="card" id="ttsCard">
-  <div class="card-title">▸ KI-Kommentare</div>
-  <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">CHARAKTER</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
-    <button id="charZaertlich" onclick="setCharacter('zaertlich')" class="btn-auto">🌸 Zärtlich</button>
-    <button id="charDominant"  onclick="setCharacter('dominant')"  class="btn-auto">👑 Dominant</button>
-    <button id="charDirty"     onclick="setCharacter('dirty')"     class="btn-auto">🔥 Dirty</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
-      <input type="checkbox" id="aiEnabled" onchange="toggleAI()" style="width:15px;height:15px;accent-color:var(--success);" />
-      <span>KI generiert live neue Texte</span>
-    </label>
-    <span id="aiStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
-  </div>
 </div>
 
 <!-- Befehl -->
