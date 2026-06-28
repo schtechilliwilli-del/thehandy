@@ -1445,7 +1445,6 @@ function enableAll(on) {
   const ids = ['btnOhGott','btnChallenge','btnRandom','btnTimer','btnCountdown',
                'rUp','rDown','rPlay','rStop','rSlower','rFaster'];
   ids.forEach(id => { const b = document.getElementById(id); if(b) b.disabled = !on; });
-  document.querySelectorAll('.script-btn').forEach(b => b.disabled = !on);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2104,9 +2103,16 @@ function buildScripts() {
     const btn = document.createElement('button');
     btn.className = 'script-btn';
     btn.id = 'btn_' + s.id;
-    btn.disabled = true;
+    btn.disabled = false; // immer sichtbar
     btn.innerHTML = `<span class="s-icon">${s.icon}</span><span class="s-name">${s.name}</span><span class="s-desc">${s.desc}</span>`;
-    btn.onclick = () => playScript(s.id);
+    btn.onclick = () => {
+      if (!connected) {
+        setStatus('Bitte zuerst verbinden!', 'error');
+        setTimeout(() => setStatus('Nicht verbunden', ''), 2000);
+        return;
+      }
+      playScript(s.id);
+    };
     grid.appendChild(btn);
   });
 }
