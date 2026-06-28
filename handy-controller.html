@@ -1523,9 +1523,7 @@ function getEscalatedComment(scriptId) {
   return combined[Math.floor(Math.random() * combined.length)];
 }
 
-// ── Stöhnen per Web Audio API ── ENTFERNT ──────────────────
-let moanActive = false;
-let moanTimer = null;
+// ── Stöhnen entfernt ───────────────────────────────────────
 function toggleMoan() {}
 function scheduleMoan() {}
 
@@ -1568,8 +1566,6 @@ async function fetchAIComment() {
 }
 
 // ── TTS entfernt ───────────────────────────────────────────
-let ttsActive = false;
-let ttsVoices = [];
 function speak() {}
 function loadVoices() {}
 function toggleTTS() {}
