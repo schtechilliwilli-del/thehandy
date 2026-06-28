@@ -663,7 +663,7 @@ async function playScript(scriptId) {
   stopRhythm();
   stopPresets();
   if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
-  if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
+  if (commentTimer) { clearInterval(commentTimer); clearTimeout(commentTimer); commentTimer = null; }
 
   const wasPlaying = isPlaying;
   currentScriptId = scriptId;
@@ -1162,7 +1162,7 @@ async function stopAll(showMsg = true) {
   stopRhythm();
   stopPresets();
   if (autoModeTimer) { clearTimeout(autoModeTimer); autoModeTimer = null; }
-  if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
+  if (commentTimer) { clearInterval(commentTimer); clearTimeout(commentTimer); commentTimer = null; }
   if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
   if (ohGottTimer) { clearTimeout(ohGottTimer); ohGottTimer = null; }
   if (moanTimer) { clearTimeout(moanTimer); moanTimer = null; }
@@ -1319,16 +1319,24 @@ async function runOhGott() {
     'Jeder Tropfen gehört mir.'
   ];
 
-  // CommentTimer explizit stoppen und neu starten
+  // CommentTimer stoppen
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
-  let ogIdx = 0;
-  const shuffled = [...ohComments].sort(() => Math.random() - 0.5);
-  showComment(shuffled[0]);
-  commentTimer = setInterval(() => {
-    ogIdx = (ogIdx + 1) % shuffled.length;
-    showComment(shuffled[ogIdx]);
-  }, 9000);
 
+  // Gemischte Liste
+  const shuffled = [...ohComments].sort(() => Math.random() - 0.5);
+  let ogIdx = 0;
+
+  // Text direkt ohne Tipp-Effekt einsetzen damit nichts überschrieben wird
+  const showOhText = () => {
+    if (!ohGottActive || !isPlaying) return;
+    const box = document.getElementById('claudeComment');
+    const text = shuffled[ogIdx % shuffled.length];
+    ogIdx++;
+    box.textContent = text;
+    commentTimer = setTimeout(showOhText, 8000);
+  };
+
+  showOhText();
   startProgress();
   scheduleOhGottPulse();
 }
