@@ -12,6 +12,12 @@
     --success: #34d399; --text: #e2e8f0; --muted: #64748b;
     --glow: rgba(192,132,252,0.15);
   }
+  body.light-mode {
+    --bg: #f0f0f7; --surface: #ffffff; --border: #d1d5db;
+    --text: #1a1a2e; --muted: #6b7280; --glow: rgba(192,132,252,0.1);
+  }
+  .btn-theme { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; color: var(--muted); cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+  .btn-theme:hover { border-color: var(--accent); color: var(--text); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
   header { text-align: center; margin-bottom: 32px; }
@@ -101,6 +107,9 @@
 <body>
 
 <header>
+  <div style="position:relative;">
+    <button class="btn-theme" onclick="toggleTheme()" id="btnTheme" style="position:absolute;right:0;top:0;">🌙</button>
+  </div>
   <h1>◈ HANDY CTRL</h1>
   <p>Skript-Controller · The Handy API</p>
 </header>
@@ -276,6 +285,104 @@
   <button class="btn-happy" onclick="happyChoice('hoernichtauf')" style="background:rgba(192,132,252,0.15);border:2px solid var(--accent);color:var(--accent);font-size:1.05rem;">🔁 Hör nicht auf!!</button>
 </div>
 
+<!-- Favoriten -->
+<div class="card" id="favCard">
+  <div class="card-title">▸ Favoriten</div>
+  <div id="favList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+    <div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:12px;">Noch keine Favoriten gespeichert.</div>
+  </div>
+  <button onclick="saveFavorite()" id="btnSaveFav" disabled style="width:100%;background:rgba(192,132,252,0.1);border:1px solid var(--accent);border-radius:10px;padding:10px;color:var(--accent);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;">＋ Aktuelle Einstellung speichern</button>
+</div>
+
+<!-- Session Statistiken & Graph -->
+<div class="card" id="statsCard">
+  <div class="card-title">▸ Session-Statistiken</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="statsGrid">
+    <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:1.3rem;color:var(--accent);" id="statTime">00:00</div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">GESAMTZEIT</div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:1.3rem;color:var(--accent);" id="statOrgasms">0</div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">ORGASMEN</div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:1.3rem;color:var(--accent);" id="statAvgSpeed">–</div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">Ø SPEED</div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:1.1rem;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="statTopScript">–</div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">MEIST GENUTZT</div>
+    </div>
+  </div>
+  <!-- Verlaufsgraph -->
+  <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">VERLAUF</div>
+  <canvas id="sessionGraph" height="80" style="width:100%;border-radius:8px;background:var(--bg);display:block;"></canvas>
+  <div style="display:flex;justify-content:space-between;margin-top:6px;">
+    <span style="font-size:0.65rem;color:var(--accent2);">── Speed</span>
+    <span style="font-size:0.65rem;color:var(--success);">── Tiefe</span>
+  </div>
+  <button onclick="resetStats()" style="margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:0.78rem;cursor:pointer;">↺ Statistiken zurücksetzen</button>
+</div>
+
+<!-- Text-to-Speech -->
+<div class="card" id="ttsCard">
+  <div class="card-title">▸ Stimme</div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
+      <input type="checkbox" id="ttsEnabled" onchange="toggleTTS()" style="width:15px;height:15px;accent-color:var(--accent);" />
+      <span>Stimme aktivieren</span>
+    </label>
+    <span id="ttsStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
+  </div>
+
+  <!-- Charakter -->
+  <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">CHARAKTER</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button id="charZaertlich" onclick="setCharacter('zaertlich')" class="btn-auto">🌸 Zärtlich</button>
+    <button id="charDominant"  onclick="setCharacter('dominant')"  class="btn-auto">👑 Dominant</button>
+    <button id="charDirty"     onclick="setCharacter('dirty')"     class="btn-auto">🔥 Dirty</button>
+  </div>
+
+  <!-- Stöhnen -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
+      <input type="checkbox" id="moanEnabled" onchange="toggleMoan()" style="width:15px;height:15px;accent-color:var(--accent);" />
+      <span>Stöhn-Sounds</span>
+    </label>
+    <div class="slider-row" style="flex:1;margin-bottom:0;">
+      <span class="slider-label" style="width:60px">Häufigkeit</span>
+      <input type="range" id="moanFreq" min="5" max="30" value="15" oninput="document.getElementById('moanFreqVal').textContent=this.value+'s'" style="flex:1;" />
+      <span class="slider-val" id="moanFreqVal">15s</span>
+    </div>
+  </div>
+
+  <!-- KI-Kommentare -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
+      <input type="checkbox" id="aiEnabled" onchange="toggleAI()" style="width:15px;height:15px;accent-color:var(--success);" />
+      <span>KI-Kommentare live</span>
+    </label>
+    <span id="aiStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
+  </div>
+
+  <!-- Lautstärke & Tempo -->
+  <div class="slider-row">
+    <span class="slider-label">Lautstärke</span>
+    <input type="range" id="ttsVolume" min="0" max="1" step="0.1" value="1" oninput="document.getElementById('ttsVolVal').textContent=Math.round(this.value*100)+'%'" />
+    <span class="slider-val" id="ttsVolVal">100%</span>
+  </div>
+
+  <!-- Stimme -->
+  <div style="margin-top:8px;">
+    <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px;">STIMME (GERÄT)</div>
+    <select id="ttsVoiceSelect" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.82rem;outline:none;">
+      <option value="">– wird geladen –</option>
+    </select>
+  </div>
+  <button onclick="ttsTest()" style="margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:0.8rem;cursor:pointer;">🔊 Test</button>
+</div>
+
 <!-- Befehl -->
 <div class="card">
   <div class="card-title">▸ Befehl</div>
@@ -382,72 +489,72 @@ const SCRIPTS = [
   {
     id: 'pronebone', name: 'Pronebone', icon: '〰️', desc: 'Sanft & tief, langsam',
     depthMin: 5, depthMax: 90, startSpeed: 18,
-    comments: ['Ganz ruhig.', 'Lass dich fallen.', 'Tief und gleichmäßig.', 'Kein Eilen.', 'Atme durch.', 'Jede Bewegung zählt.', 'Bleib hier.', 'So bleibt es.', 'Tiefer noch.', 'Ja genau so.'],
+    comments: ['Ganz ruhig.', 'Lass dich fallen.', 'Tief und gleichmäßig.', 'Kein Eilen.', 'Atme durch.', 'Jede Bewegung zählt.', 'Bleib hier.', 'So bleibt es.', 'Tiefer noch.', 'Ja genau so.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Fick mich endlich, ich will dich in mir.', 'Bitte hör nicht auf!', 'Du machst mich so nass.', 'Ich will dich so tief in mir spüren.', 'Fühl wie tief ich ihn nehme.', 'Ich spür dich bis ganz innen.', 'Mach mich fertig.', 'Du bist so verdammt gut.'],
     frames: [{t:0,p:100},{t:2500,p:0},{t:3000,p:0},{t:3800,p:100},{t:6300,p:0},{t:6800,p:0},{t:7600,p:100},{t:10100,p:0}],
     presets: [{speed:15, dMin:5,  dMax:90}, {speed:10, dMin:10, dMax:80}, {speed:22, dMin:5,  dMax:95}, {speed:8,  dMin:15, dMax:85}]
   },
   {
     id: 'edging_wurzel', name: 'Edging Wurzel', icon: '▼', desc: 'Basis, tief & stabil',
     depthMin: 2, depthMax: 30, startSpeed: 20,
-    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da. Genau da.', 'Bleib unten.', 'Steck ihn wieder rein.', 'Ganz tief rein.'],
+    comments: ['Ganz unten.', 'Spür die Basis.', 'Tief und stabil.', 'Wurzel.', 'Atme.', 'Bodenlos.', 'Da. Genau da.', 'Bleib unten.', 'Steck ihn wieder rein.', 'Ganz tief rein.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Bitte hör nicht auf!', 'Du machst mich so nass.', 'Nur die Wurzel – tief rein.', 'Ich halt dich an der Basis.', 'Spür wie eng ich bin ganz unten.', 'Drück ihn rein. Bis zur Wurzel.', 'Du bist so verdammt gut.'],
     frames: [{t:0,p:0},{t:700,p:100},{t:1400,p:0},{t:2100,p:100},{t:2800,p:0},{t:3500,p:100},{t:4200,p:0}],
     presets: [{speed:18, dMin:2, dMax:28}, {speed:25, dMin:2, dMax:32}, {speed:12, dMin:2, dMax:22}, {speed:30, dMin:2, dMax:30}]
   },
   {
     id: 'edging_stamm', name: 'Edging Stamm', icon: '◼', desc: 'Mitte, rhythmisch',
     depthMin: 20, depthMax: 65, startSpeed: 25,
-    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.', 'Nicht hetzen.', 'Kontrolliert.', 'Ja, so.', 'Weiter.'],
+    comments: ['Gleichmäßig.', 'Rhythmus halten.', 'Mitte.', 'Ausdauer.', 'Bewusst.', 'Im Takt.', 'Nicht hetzen.', 'Kontrolliert.', 'Ja, so.', 'Weiter.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Fick mich endlich, ich will dich in mir.', 'Bitte hör nicht auf!', 'Ich spür deinen Rhythmus.', 'So reite ich dich. Immer weiter.', 'Du machst mich so nass.', 'Du bist so verdammt gut.', 'Mach mich fertig.'],
     frames: [{t:0,p:100},{t:800,p:0},{t:1600,p:100},{t:2400,p:0},{t:3200,p:100},{t:4000,p:0},{t:4800,p:100}],
     presets: [{speed:22, dMin:20, dMax:65}, {speed:30, dMin:25, dMax:68}, {speed:18, dMin:15, dMax:60}, {speed:35, dMin:22, dMax:70}]
   },
   {
     id: 'edging_top', name: 'Edging Top', icon: '▲', desc: 'Nur die Spitze',
     depthMin: 60, depthMax: 100, startSpeed: 30,
-    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.', 'Nicht nachgeben.', 'Fast.', 'Nur oben.', 'Bleib.'],
+    comments: ['Nur die Spitze.', 'Bleib oben.', 'Warte.', 'Noch nicht.', 'Halte durch.', 'Konzentrier dich.', 'Nicht nachgeben.', 'Fast.', 'Nur oben.', 'Bleib.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Bitte hör nicht auf!', 'Nur die Eichel. Mehr kriegst du nicht.', 'Ich tease dich bis du bittest.', 'Noch nicht tiefer. Noch nicht.', 'Spür wie nass ich bin – und warte.', 'Ich lass dich zappeln.', 'Du machst mich so nass.'],
     frames: [{t:0,p:100},{t:600,p:0},{t:1200,p:100},{t:1800,p:0},{t:2400,p:100},{t:3000,p:0},{t:3600,p:100}],
     presets: [{speed:28, dMin:62, dMax:100}, {speed:35, dMin:65, dMax:100}, {speed:20, dMin:60, dMax:98}, {speed:40, dMin:68, dMax:100}]
   },
   {
     id: 'keep_riding', name: 'Keep Riding', icon: '🔄', desc: 'Voller Hub, ruhig',
     depthMin: 5, depthMax: 95, startSpeed: 22,
-    comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.', 'Kein Ende.', 'Noch mehr.'],
+    comments: ['Weiter.', 'Nicht aufhören.', 'Bleib dran.', 'Ja.', 'Mehr.', 'Immer weiter.', 'Kein Ende.', 'Noch mehr.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Fick mich endlich, ich will dich in mir.', 'Bitte hör nicht auf!', 'Ich reite dich bis ich will.', 'Von ganz oben bis ganz unten.', 'Ich hör nicht auf – du auch nicht.', 'Spür jeden Zentimeter.', 'Du machst mich so nass.', 'Bitte komm in mich!!'],
     frames: [{t:0,p:100},{t:1800,p:0},{t:3600,p:100},{t:5400,p:0},{t:7200,p:100},{t:9000,p:0},{t:10800,p:100}],
     presets: [{speed:20, dMin:5,  dMax:90}, {speed:28, dMin:2,  dMax:95}, {speed:15, dMin:10, dMax:85}, {speed:35, dMin:5,  dMax:100}]
   },
   {
     id: 'deepthroat', name: 'Deepthroat', icon: '↕️', desc: 'Voller Hub, schneller',
     depthMin: 2, depthMax: 100, startSpeed: 35,
-    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Vollständig.', 'Ganz rein.', 'Härter Daddy!'],
+    comments: ['Voller Hub.', 'Ganz rein.', 'Bis zum Anschlag.', 'Tief.', 'Komplett.', 'Alles.', 'Kein Zentimeter übrig.', 'Härter Daddy!', 'Oh wow, dein Schwanz ist so hart.', 'Fick mich endlich, ich will dich in mir.', 'Härter, härter!', 'Fick mich hart und tief!', 'Hör nicht auf!', 'Ja! Genau so! Weiter!', 'Ich kann kaum noch atmen – weiter!', 'So hart – ich komme gleich.', 'Fick mich bis ich schreie.', 'Voller Hub – ich will alles.', 'Harder. Deeper. Don\'t stop.', 'Bitte komm in mich!!'],
     frames: [{t:0,p:100},{t:500,p:0},{t:1000,p:100},{t:1500,p:0},{t:2000,p:100},{t:2500,p:0},{t:3000,p:100}],
     presets: [{speed:32, dMin:2,  dMax:100}, {speed:42, dMin:2,  dMax:100}, {speed:25, dMin:5,  dMax:95}, {speed:50, dMin:2,  dMax:100}]
   },
   {
     id: 'deep_seeding', name: 'Deep Seeding', icon: '🌊', desc: 'Schnell runter, langsam hoch',
     depthMin: 2, depthMax: 100, startSpeed: 40,
-    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.', 'Und wieder.', 'Keine Eile zurück.', 'Steck ihn rein.', 'Ganz tief.'],
+    comments: ['Tief.', 'Langsam zurück.', 'Wellen.', 'Gib nach.', 'Unvermeidlich.', 'Tiefer noch.', 'Und wieder.', 'Keine Eile zurück.', 'Steck ihn rein.', 'Ganz tief.', 'Oh wow, dein Schwanz ist so hart.', 'Ich will dich in mir, jetzt!', 'Fick mich endlich, ich will dich in mir.', 'Bitte hör nicht auf!', 'Schnell rein – quälend langsam raus.', 'Ich zieh ihn raus… ganz… langsam.', 'Und wieder rein. Schnell. Hart.', 'Diese Welle hört nie auf.', 'Du machst mich so nass.', 'Bitte komm in mich!!'],
     frames: [{t:0,p:100},{t:400,p:0},{t:3400,p:100},{t:3800,p:0},{t:6800,p:100},{t:7200,p:0},{t:10200,p:100}],
     presets: [{speed:38, dMin:2,  dMax:100}, {speed:28, dMin:2,  dMax:95}, {speed:45, dMin:5,  dMax:100}, {speed:32, dMin:2,  dMax:90}]
   },
   {
     id: 'squat_ride', name: 'Squat Ride', icon: '🏋️', desc: 'Blitzschnell runter – quälend langsam hoch',
-    depthMin: 2, depthMax: 100, startSpeed: 45,
-    comments: ['Ganz runter.', 'Langsam hoch.', 'Reit es.', 'Nicht hetzen.', 'Spür jeden Millimeter.', 'Ganz unten bleiben.', 'Jetzt hoch – ganz langsam.', 'Du kannst nicht entkommen.', 'Immer tiefer.', 'Noch langsamer.'],
+    depthMin: 0, depthMax: 100, startSpeed: 100,
+    comments: ['Hart tief rein.', 'Ganz runter – ich will ihn tief in mir.', 'So tief wie du in mir steckst macht mich wahnsinnig.', 'Ich lass mich auf dich fallen. Immer wieder.', 'So tief – ich spür dich im Bauch.', 'Lass dich fallen – voller Schwanz auf einmal.', 'Klatsch! Tief rein. Alles.', 'Auf deinen Schwanz. Voll. Jetzt.', 'Oh Gott… langsam… raus…', 'Ich spüre jeden Millimeter wie er rausgleitet.', 'Ich zieh ihn fast raus – aber nur fast.', 'So langsam hoch – das macht mich verrückt.', 'Spür jeden Millimeter wie er rausgleitet.', 'Ich quäl dich. Ganz bewusst.', 'Bis nur noch die Spitze drin ist…', 'Bereit? Ich lass mich fallen.', 'Halt dich fest.', 'Und jetzt… wieder… fallen lassen.'],
     frames: null,
-    presets: [{speed:45, dMin:2, dMax:100}, {speed:50, dMin:2, dMax:90}, {speed:40, dMin:2, dMax:95}, {speed:55, dMin:2, dMax:100}]
+    presets: [{speed:100, dMin:0, dMax:100}, {speed:100, dMin:0, dMax:100}, {speed:100, dMin:0, dMax:100}, {speed:100, dMin:0, dMax:100}]
   },
   {
     id: 'milking_hard', name: 'Milking Hard', icon: '⚡', desc: 'Schnell mit Pausen',
-    depthMin: 2, depthMax: 100, startSpeed: 55,
-    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.', 'Härter Daddy!', 'Ja – so!'],
+    depthMin: 0, depthMax: 100, startSpeed: 80,
+    comments: ['Kein Halten.', 'Schnell.', 'Pause.', 'Weiter.', 'Lass los.', 'Und wieder.', 'Nicht aufhören.', 'Noch einmal.', 'Härter Daddy!', 'Ja – so!', 'Oh wow, dein Schwanz ist so hart.', 'Härter, härter!', 'Fick mich hart und tief!', 'Hör nicht auf!', 'Ja! Genau so! Weiter!', 'Rein. Tief. Schnell. Jetzt.', 'So hart – ich komme gleich.', 'Fick mich bis ich schreie.', 'Harder. Deeper. Don\'t stop.', 'Bitte komm in mich!!'],
     frames: null,
-    presets: [{speed:50, dMin:2,  dMax:100}, {speed:60, dMin:5,  dMax:95}, {speed:40, dMin:2,  dMax:100}, {speed:70, dMin:2,  dMax:100}]
+    presets: [{speed:80, dMin:0,  dMax:100}, {speed:85, dMin:50, dMax:100}, {speed:80, dMin:65, dMax:100}, {speed:90, dMin:0,  dMax:100}]
   },
   {
-    id: 'ich_komme', name: 'Ich komme!', icon: '💥', desc: 'Schnell runter, extrem langsam hoch',
-    depthMin: 2, depthMax: 100, startSpeed: 60,
-    comments: ['Gleich.', 'Fast.', 'Ja.', 'Jetzt.', 'Lass es kommen.', 'Gib nach.', 'Nicht aufhalten.', 'Ja – jetzt.', 'Komm in mich.', 'Jetzt!'],
-    frames: [{t:0,p:50},{t:400,p:0},{t:5400,p:50},{t:5800,p:0},{t:10800,p:50},{t:11200,p:0},{t:16200,p:50}],
-    presets: [{speed:55, dMin:2,  dMax:100}, {speed:45, dMin:2,  dMax:95}, {speed:65, dMin:5,  dMax:100}, {speed:50, dMin:2,  dMax:100}]
+    id: 'ich_komme', name: 'Ich komme!', icon: '💥', desc: 'Top Speed – voller Hub & oberes Drittel',
+    depthMin: 0, depthMax: 100, startSpeed: 100,
+    comments: ['Ich fick dich durch den Höhepunkt.', 'Kein Stopp jetzt – volle Kraft bis du kommst.', 'Alle 19cm. Jetzt. Schnell.', 'Ich nehm jeden Zentimeter – komm jetzt.', 'Voller Hub bis du explodierst.', 'Nur die Spitze – ich melk dich leer.', 'Ich melk die Eichel bis du kommst.', 'Nur oben – schnell – komm jetzt.', 'Die Spitze gehört mir. Komm.', 'Ich melk es raus. Jetzt sofort.', 'Komm. Jetzt. Sofort.', 'Ich spür dass du gleich explodierst.', 'Gib nach – lass es raus.', 'Ich hör nicht auf bis du kommst.', 'Du kannst nicht mehr warten – komm.', 'Komm in mich. Jetzt. Bitte.', 'Ich halt dich drin bis du fertig bist.', 'Härter, härter!', 'Bitte komm in mich!!', 'Jetzt!!'],
+    frames: null,
+    presets: [{speed:100, dMin:0, dMax:100}, {speed:100, dMin:65, dMax:100}, {speed:100, dMin:0, dMax:100}, {speed:100, dMin:65, dMax:100}]
   },
 ];
 
@@ -602,6 +709,12 @@ async function playScript(scriptId) {
   const wasPlaying = isPlaying;
   currentScriptId = scriptId;
   isPlaying = true;
+
+  // Stats-Timer starten
+  startStatsTimer();
+  // Favoriten-Button aktivieren
+  const favBtn = document.getElementById('btnSaveFav');
+  if (favBtn) favBtn.disabled = false;
 
   // UI
   document.querySelectorAll('.script-btn').forEach(b => b.classList.remove('active'));
@@ -973,83 +1086,106 @@ async function startRhythm(scriptId) {
     }
 
     case 'squat_ride': {
-      // Zwei klar getrennte Phasen über volle Hübe
-      // Runter: {min:2, max:100} + max speed → Gerät schlägt nach unten durch
-      // Hoch:   {min:70, max:100} + min speed → Gerät kriecht langsam nach oben
-      // Durch den großen Hub kein Rattern
+      // Runter: Speed 100, min:0 max:100 → knallt auf 5% runter
+      // Hoch:   Speed 1, Fenster langsam nach oben auf zufällige 70–100%
       let sqPhase = 'down';
 
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
-        const mx = getSpeedMax();
-        const mn = Math.max(8, getSpeedMin());
-        const topPos = Math.round(70 + Math.random() * 10); // 70–80%
 
         if (sqPhase === 'down') {
-          // Voller Hub, Max-Speed → läuft sauber bis ganz unten
-          await api('/hamp/velocity', 'PUT', { velocity: mx });
-          await api('/slide', 'PUT', { min: 2, max: 100 });
-          // Warten bis Gerät unten angekommen ist (eine halbe Periode)
-          const downMs = Math.round(1800 * (50 / Math.max(mx, 15)));
+          // Volle Kraft runter – Gerät knallt auf 5%
+          await api('/hamp/velocity', 'PUT', { velocity: 100 });
+          await api('/slide', 'PUT', { min: 0, max: 5 });
+          document.getElementById('speedSlider').value = 100;
+          document.getElementById('speedVal').textContent = '100%';
+          document.getElementById('depthMinSlider').value = 0;
+          document.getElementById('depthMaxSlider').value = 5;
+          document.getElementById('depthMinVal').textContent = '0%';
+          document.getElementById('depthMaxVal').textContent = '5%';
+          // Zeit bis Gerät unten ist: bei Speed 100 sehr kurz
           sqPhase = 'up';
-          rhythmTimeout = setTimeout(run, downMs);
+          rhythmTimeout = setTimeout(run, 600);
         } else {
-          // Oberes Fenster setzen + Min-Speed → kriecht von 0 bis topPos
-          await api('/hamp/velocity', 'PUT', { velocity: mn });
-          await api('/slide', 'PUT', { min: 2, max: topPos });
-          // Wartezeit proportional zur Strecke und Langsamkeit
-          const upMs = Math.round(topPos * 55 * (30 / Math.max(mn, 5)));
+          // Quälend langsam hoch – Speed 1, Ziel: zufällig 70–100%
+          const topPos = Math.round(70 + Math.random() * 30);
+          await api('/hamp/velocity', 'PUT', { velocity: 1 });
+          await api('/slide', 'PUT', { min: 0, max: topPos });
+          document.getElementById('speedSlider').value = 1;
+          document.getElementById('speedVal').textContent = '1%';
+          document.getElementById('depthMinSlider').value = 0;
+          document.getElementById('depthMaxSlider').value = topPos;
+          document.getElementById('depthMinVal').textContent = '0%';
+          document.getElementById('depthMaxVal').textContent = topPos + '%';
+          // Wartezeit: je weiter hoch, desto länger – bei Speed 1 sehr langsam
+          const upMs = Math.round(topPos * 120); // ~8–12 Sekunden für volle Strecke
           sqPhase = 'down';
           rhythmTimeout = setTimeout(run, upMs);
         }
       };
-      rhythmTimeout = setTimeout(run, 500);
+      rhythmTimeout = setTimeout(run, 300);
       break;
     }
 
     case 'milking_hard': {
-      // Zufallsmix: schnell, Pause, halb, voll
+      // Immer volle Geschwindigkeit – nur Tiefe wechselt
+      // Abwechselnd: voller Hub (0–100%), obere Hälfte (50–100%), oberes Drittel (65–100%)
+      const depthPatterns = [
+        { min: 0,  max: 100 }, // voller Hub
+        { min: 0,  max: 100 }, // voller Hub (doppelt gewichtet)
+        { min: 50, max: 100 }, // obere Hälfte
+        { min: 0,  max: 100 }, // voller Hub
+        { min: 65, max: 100 }, // oberes Drittel
+      ];
+      let dpIdx = 0;
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
-        const pauseMs = parseInt(document.getElementById('pauseSlider').value) * 1000; // live lesen!
-        const r = Math.random();
-        if (r < 0.3) {
-          // Pause
-          await applyVelocity(getSpeedMin());
-          rhythmTimeout = setTimeout(async () => {
-            if (!isPlaying || currentScriptId !== scriptId) return;
-            await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 800 + Math.random() * 1000);
-          }, pauseMs);
-        } else if (r < 0.6) {
-          await applyVelocity(randSpeed());
-          rhythmTimeout = setTimeout(run, 600 + Math.random() * 800);
-        } else {
-          await applyVelocity(base * (0.7 + Math.random() * 0.6));
-          rhythmTimeout = setTimeout(run, 300 + Math.random() * 500);
-        }
+        // Geschwindigkeit immer auf Max halten
+        const mx = getSpeedMax();
+        await api('/hamp/velocity', 'PUT', { velocity: mx });
+        // Tiefe wechseln
+        const dp = depthPatterns[dpIdx % depthPatterns.length];
+        dpIdx++;
+        await api('/slide', 'PUT', { min: dp.min, max: dp.max });
+        // Slider UI updaten
+        document.getElementById('depthMinSlider').value = dp.min;
+        document.getElementById('depthMaxSlider').value = dp.max;
+        document.getElementById('depthMinVal').textContent = dp.min + '%';
+        document.getElementById('depthMaxVal').textContent = dp.max + '%';
+        // Nächster Wechsel nach kurzer Zeit
+        rhythmTimeout = setTimeout(run, 1500 + Math.random() * 1500);
       };
       rhythmTimeout = setTimeout(run, 500);
       break;
     }
 
     case 'ich_komme': {
-      // Sehr langsam, gelegentlich kurz schnell
+      // Top Speed – abwechselnd voller Hub (0–100%) und oberes Drittel (65–100%)
+      let ikPhase = 0;
+      const patterns = [
+        { min: 0,  max: 100 }, // voller Hub
+        { min: 0,  max: 100 }, // voller Hub
+        { min: 65, max: 100 }, // oberes Drittel melken
+        { min: 0,  max: 100 }, // voller Hub
+        { min: 65, max: 100 }, // oberes Drittel melken
+      ];
       const run = async () => {
         if (!isPlaying || currentScriptId !== scriptId) return;
-        const r = Math.random();
-        if (r < 0.2) {
-          await applyVelocity(randSpeed());
-          rhythmTimeout = setTimeout(async () => {
-            await applyVelocity(randSpeed());
-            rhythmTimeout = setTimeout(run, 1200 + Math.random() * 1500);
-          }, 300);
-        } else {
-          await applyVelocity(base * (0.3 + Math.random() * 0.3));
-          rhythmTimeout = setTimeout(run, 1000 + Math.random() * 1200);
-        }
+        // Immer Speed 100
+        await api('/hamp/velocity', 'PUT', { velocity: 100 });
+        document.getElementById('speedSlider').value = 100;
+        document.getElementById('speedVal').textContent = '100%';
+        // Tiefe wechseln
+        const dp = patterns[ikPhase % patterns.length];
+        ikPhase++;
+        await api('/slide', 'PUT', { min: dp.min, max: dp.max });
+        document.getElementById('depthMinSlider').value = dp.min;
+        document.getElementById('depthMaxSlider').value = dp.max;
+        document.getElementById('depthMinVal').textContent = dp.min + '%';
+        document.getElementById('depthMaxVal').textContent = dp.max + '%';
+        rhythmTimeout = setTimeout(run, 1000 + Math.random() * 1000);
       };
-      rhythmTimeout = setTimeout(run, 1500);
+      rhythmTimeout = setTimeout(run, 200);
       break;
     }
 
@@ -1070,6 +1206,15 @@ async function stopAll(showMsg = true) {
   if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
   if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
   if (ohGottTimer) { clearTimeout(ohGottTimer); ohGottTimer = null; }
+  if (moanTimer) { clearTimeout(moanTimer); moanTimer = null; }
+  if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; }
+  // Session zurücksetzen
+  sessionStartTime = null;
+  escalationLevel = 0;
+  // Stats-Timer stoppen
+  stopStatsTimer();
+  // TTS stoppen
+  window.speechSynthesis.cancel();
 
   // Timer-Modus stoppen
   if (timerInterval) {
@@ -1109,6 +1254,7 @@ async function stopAll(showMsg = true) {
   if (challengeInterval) {
     clearInterval(challengeInterval);
     challengeInterval = null;
+    challengeSecs = 0;
     document.getElementById('btnChallenge').querySelector('.f-desc').textContent = 'Wie lange hältst du durch?';
   }
 
@@ -1143,6 +1289,8 @@ async function stopAll(showMsg = true) {
 // ═══════════════════════════════════════════════════════════
 async function runOhGott() {
   if (!connected) return;
+  // Orgasmus zählen
+  recordOrgasm();
 
   // Ausdauer-Timer stoppen und Zeit als Rekord speichern
   if (challengeInterval) {
@@ -1183,7 +1331,34 @@ async function runOhGott() {
   await delay(200);
   await api('/hamp/velocity', 'PUT', { velocity: 5 });
 
-  const ohComments = ['Bis zum letzten Tropfen!','Jeden Millimeter spüren.','Ganz tief – und bleib da.','Ich lass dich nicht raus.','Stiller. Tiefer. Mehr.','Du gehörst mir.','Kein Entkommen.','Tief rein. Ganz rein.','Ich komme in dich.','Du kannst nicht aufhören.','Spür es. Jeden Stoß.','Gib nach. Jetzt.','Du wirst kommen.','Halt durch.','Tiefer als du denkst.','Ich mach weiter. Immer.','Dein Körper lügt nicht.','Stöhn für mich.','Du bist so eng.','Ich merk wie du zitterst.'];
+  const ohComments = [
+    'Ich spüre dich pulsieren!',
+    'Zieh ihn nicht raus!',
+    'Füll mich, ich fick dich weiter.',
+    'Oh Gott, bist du hart!',
+    'Bitte hör nicht auf.',
+    'Komm tief in mich.',
+    'Ich halt dich fest – komm.',
+    'Nicht aufhören. Niemals.',
+    'Ich fühl dich zittern.',
+    'Ich will jeden Tropfen.',
+    'Komm in mich. Jetzt.',
+    'Du gehörst mir. Komm.',
+    'Lass es raus. Alles.',
+    'Ich fick dich durch den Höhepunkt.',
+    'Spür wie ich dich melke.',
+    'Kein Entkommen. Komm.',
+    'Ich stop nicht – komm einfach.',
+    'Ich fick dich weiter bis du leer bist.',
+    'Ich melke jeden Tropfen aus dir raus.',
+    'Komm – ich hör erst auf wenn du leer bist.',
+    'Ich fick dich bis nichts mehr kommt.',
+    'Ich spür jeden Schuss – gib mir mehr.',
+    'Ich saug alles aus dir raus.',
+    'Du bist noch nicht leer – weiter.',
+    'Ich fick dich bis du zitterst und leer bist.',
+    'Jeder Tropfen gehört mir.'
+  ];
   startComments(ohComments);
   startProgress();
   scheduleOhGottPulse();
@@ -1312,21 +1487,269 @@ function enableAll(on) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// TEXT-TO-SPEECH + CHARAKTER + STÖHNEN + ESKALATION + KI
+// ═══════════════════════════════════════════════════════════
+let ttsActive = false;
+let ttsVoices = [];
+let currentCharacter = 'dominant'; // 'zaertlich' | 'dominant' | 'dirty'
+let moanActive = false;
+let moanTimer = null;
+let aiCommentsActive = false;
+let sessionStartTime = null;
+let escalationLevel = 0; // 0=warm, 1=mittel, 2=intensiv, 3=maximal
+
+// ── Charakter-Profile ──────────────────────────────────────
+const CHARACTERS = {
+  zaertlich: {
+    rate: 0.85, pitch: 1.3,
+    globalTexts: {
+      0: ['Ich spür dich so gut.', 'Bleib bei mir.', 'Du bist so sanft.', 'Ich will dich in mir spüren.', 'So schön.'],
+      1: ['Ich werde ganz nass von dir.', 'Du machst mich wahnsinnig.', 'Ich will mehr von dir.', 'Bitte hör nicht auf.', 'Du fühlst dich so gut an.'],
+      2: ['Ich kann nicht mehr warten.', 'Ich will dich so tief in mir.', 'Mach mich fertig.', 'Ich bin so nass für dich.', 'Fick mich bitte.'],
+      3: ['Komm in mich. Bitte.', 'Ich will deinen Samen in mir.', 'Gib mir alles. Jetzt.', 'Ich halte dich fest – komm.', 'Füll mich aus.']
+    }
+  },
+  dominant: {
+    rate: 1.0, pitch: 0.95,
+    globalTexts: {
+      0: ['Du gehörst mir.', 'Ich bestimme wann du kommst.', 'Kein Entkommen.', 'Tu was ich sage.', 'Du machst was ich will.'],
+      1: ['Härter. Jetzt.', 'Ich fick dich bis du schreist.', 'Du kannst nicht aufhören.', 'Komm nicht ohne meine Erlaubnis.', 'Ich merk wie du zitterst.'],
+      2: ['Ich fick dich durch den Höhepunkt.', 'Du bist meins. Komplett.', 'Ich lass dich nicht raus.', 'Kein Erbarmen. Weiter.', 'Du wirst kommen wenn ich es sage.'],
+      3: ['Jetzt. Sofort. Komm.', 'Ich fick dich leer.', 'Alles gehört mir. Auch das.', 'Komm. Auf Befehl. Jetzt.', 'Ich melke jeden Tropfen aus dir.']
+    }
+  },
+  dirty: {
+    rate: 1.1, pitch: 1.05,
+    globalTexts: {
+      0: ['Oh wow, dein Schwanz ist so hart.', 'Ich will ihn in mir. Jetzt.', 'Fick mich endlich.', 'Du machst mich so nass.', 'Ich bin so geil auf dich.'],
+      1: ['Fick mich hart und tief!', 'Harder. Deeper. Don\'t stop.', 'Ich spür dich im Bauch.', 'Alle 19cm – jetzt.', 'So tief – das macht mich wahnsinnig.'],
+      2: ['Ich fick dich weiter bis du leer bist.', 'Jeder Tropfen gehört mir.', 'Ich saug alles aus dir raus.', 'Fick mich bis nichts mehr kommt.', 'Ich melke die Eichel bis du kommst.'],
+      3: ['Komm. Fick mich voll.', 'Ich will deinen Schuss tief in mir.', 'Füll mich. Jetzt sofort.', 'Ich fick dich durch den Orgasmus.', 'Komm in mich. Tief. Alles.']
+    }
+  }
+};
+
+function setCharacter(c) {
+  currentCharacter = c;
+  ['charZaertlich','charDominant','charDirty'].forEach(id =>
+    document.getElementById(id).classList.remove('active-soft','active-medium','active-nomercy')
+  );
+  const classMap = { zaertlich:'active-soft', dominant:'active-medium', dirty:'active-nomercy' };
+  const btnMap = { zaertlich:'charZaertlich', dominant:'charDominant', dirty:'charDirty' };
+  document.getElementById(btnMap[c]).classList.add(classMap[c]);
+  const preview = { zaertlich:'Zärtlich gewählt 🌸', dominant:'Dominant gewählt 👑', dirty:'Dirty gewählt 🔥' };
+  showComment(preview[c]);
+}
+
+// Eskalation: alle 5 Minuten eine Stufe höher
+function updateEscalation() {
+  if (!sessionStartTime || !isPlaying) return;
+  const mins = (Date.now() - sessionStartTime) / 60000;
+  if      (mins >= 15) escalationLevel = 3;
+  else if (mins >= 10) escalationLevel = 2;
+  else if (mins >=  5) escalationLevel = 1;
+  else                 escalationLevel = 0;
+}
+
+function getEscalatedComment(scriptId) {
+  updateEscalation();
+  const char = CHARACTERS[currentCharacter];
+  const pool = char.globalTexts[escalationLevel];
+  // Skript-spezifische Texte mischen
+  const s = SCRIPTS.find(x => x.id === scriptId);
+  const scriptPool = s ? s.comments : [];
+  const combined = [...pool, ...scriptPool];
+  return combined[Math.floor(Math.random() * combined.length)];
+}
+
+// ── Stöhnen per Web Audio API ──────────────────────────────
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playMoan() {
+  if (!moanActive || !isPlaying) return;
+  try {
+    const ctx = getAudioCtx();
+    const duration = 0.8 + Math.random() * 1.2;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    // Stimme simulieren: tiefer Sinus mit Vibrato
+    osc.type = 'sine';
+    const baseFreq = currentCharacter === 'dominant' ? 180 + Math.random() * 60
+                   : currentCharacter === 'zaertlich' ? 250 + Math.random() * 80
+                   : 210 + Math.random() * 70;
+    osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+    // Frequenzkurve: steigt kurz an, fällt dann ab (Stöhner)
+    osc.frequency.linearRampToValueAtTime(baseFreq * 1.3, ctx.currentTime + duration * 0.3);
+    osc.frequency.linearRampToValueAtTime(baseFreq * 0.85, ctx.currentTime + duration);
+
+    // Lautstärke: ein- und ausblenden
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(parseFloat(document.getElementById('ttsVolume').value) * 0.4, ctx.currentTime + 0.1);
+    gain.gain.linearRampToValueAtTime(parseFloat(document.getElementById('ttsVolume').value) * 0.3, ctx.currentTime + duration - 0.2);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+
+    // Tief-Filter für wärmeren Klang
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+function toggleMoan() {
+  moanActive = document.getElementById('moanEnabled').checked;
+  if (moanActive) scheduleMoan();
+  else { if (moanTimer) { clearTimeout(moanTimer); moanTimer = null; } }
+}
+
+function scheduleMoan() {
+  if (!moanActive) return;
+  const freq = parseInt(document.getElementById('moanFreq').value) * 1000;
+  const jitter = (Math.random() - 0.5) * freq * 0.5;
+  moanTimer = setTimeout(() => {
+    playMoan();
+    scheduleMoan();
+  }, freq + jitter);
+}
+
+// ── KI-Kommentare live ─────────────────────────────────────
+let aiTimer = null;
+
+function toggleAI() {
+  aiCommentsActive = document.getElementById('aiEnabled').checked;
+  document.getElementById('aiStatus').textContent = aiCommentsActive ? 'AN' : 'AUS';
+  document.getElementById('aiStatus').style.color = aiCommentsActive ? 'var(--success)' : 'var(--muted)';
+  if (aiCommentsActive && isPlaying) scheduleAIComment();
+  else { if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; } }
+}
+
+function scheduleAIComment() {
+  if (!aiCommentsActive || !isPlaying) return;
+  aiTimer = setTimeout(async () => {
+    await fetchAIComment();
+    scheduleAIComment();
+  }, 12000 + Math.random() * 8000);
+}
+
+async function fetchAIComment() {
+  if (!aiCommentsActive || !isPlaying) return;
+  updateEscalation();
+  const charLabels = { zaertlich: 'zärtlich und liebevoll', dominant: 'dominant und bestimmend', dirty: 'vulgär und explizit dirty' };
+  const escalationLabels = ['warm und einladend', 'aufgeheizt und intensiver', 'sehr explizit und fordernd', 'maximal explizit beim Höhepunkt'];
+  const scriptName = currentScriptId ? (SCRIPTS.find(x => x.id === currentScriptId)?.name || currentScriptId) : 'unbekannt';
+  const prompt = `Du bist eine Frau während des Sex. Antworte NUR mit einem einzigen kurzen deutschen Satz (max 8 Wörter) was du gerade sagst. Charakter: ${charLabels[currentCharacter]}. Intensität: ${escalationLabels[escalationLevel]}. Aktueller Modus: ${scriptName}. Kein Anführungszeichen, keine Erklärung, nur den Satz.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 60,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data?.content?.[0]?.text?.trim();
+    if (text) showComment(text);
+  } catch(e) {}
+}
+
+// ── TTS Basis ──────────────────────────────────────────────
+function loadVoices() {
+  ttsVoices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('ttsVoiceSelect');
+  sel.innerHTML = '';
+  const sorted = [...ttsVoices].sort((a, b) => {
+    const aDE = a.lang.startsWith('de') ? 0 : 1;
+    const bDE = b.lang.startsWith('de') ? 0 : 1;
+    return aDE - bDE;
+  });
+  sorted.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = v.name + ' (' + v.lang + ')';
+    if (v.lang.startsWith('de') && !sel.querySelector('[selected]')) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+setTimeout(loadVoices, 500);
+
+function toggleTTS() {
+  ttsActive = document.getElementById('ttsEnabled').checked;
+  document.getElementById('ttsStatus').textContent = ttsActive ? 'AN' : 'AUS';
+  document.getElementById('ttsStatus').style.color = ttsActive ? 'var(--accent)' : 'var(--muted)';
+  if (!ttsActive) window.speechSynthesis.cancel();
+}
+
+function speak(text) {
+  if (!ttsActive) return;
+  window.speechSynthesis.cancel();
+  const char = CHARACTERS[currentCharacter];
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.volume = parseFloat(document.getElementById('ttsVolume').value);
+  utt.rate   = char.rate;
+  utt.pitch  = char.pitch;
+  const sel = document.getElementById('ttsVoiceSelect');
+  const idx = parseInt(sel.value);
+  if (!isNaN(idx) && ttsVoices[idx]) utt.voice = ttsVoices[idx];
+  else utt.lang = 'de-DE';
+  window.speechSynthesis.speak(utt);
+}
+
+function ttsTest() {
+  const testTexts = { zaertlich: 'Ich spür dich so gut.', dominant: 'Du gehörst mir.', dirty: 'Oh Gott, bist du hart!' };
+  speak(testTexts[currentCharacter]);
+}
+
+// ═══════════════════════════════════════════════════════════
 // KOMMENTARE & PROGRESS
 // ═══════════════════════════════════════════════════════════
 function startComments(list) {
   if (commentTimer) clearInterval(commentTimer);
+  // Session-Timer starten falls noch nicht läuft
+  if (!sessionStartTime) sessionStartTime = Date.now();
+  // Stöhnen starten falls aktiv
+  if (moanActive && !moanTimer) scheduleMoan();
+  // KI-Kommentare starten falls aktiv
+  if (aiCommentsActive) { if (aiTimer) clearTimeout(aiTimer); scheduleAIComment(); }
+
   let idx = 0;
+  const getNext = () => {
+    // Wenn KI aktiv: KI übernimmt, hier nur Fallback
+    if (aiCommentsActive) return null;
+    // Eskalierte Texte mischen mit Skript-Texten
+    updateEscalation();
+    const char = CHARACTERS[currentCharacter];
+    const escalPool = char.globalTexts[escalationLevel];
+    const combined = [...list, ...escalPool];
+    idx = (idx + 1) % combined.length;
+    return combined[Math.floor(Math.random() * combined.length)];
+  };
+
   showComment(list[0]);
   commentTimer = setInterval(() => {
-    idx = (idx + 1) % list.length;
-    showComment(list[idx]);
+    const text = getNext();
+    if (text) showComment(text);
   }, 8000);
 }
 
 function showComment(text) {
   const box = document.getElementById('claudeComment');
   box.innerHTML = '';
+  speak(text);
   let i = 0;
   function type() {
     if (i < text.length) {
@@ -1700,6 +2123,8 @@ function skipPhase() {
 async function happyChoice(c) {
   document.getElementById('happyEndCard').style.display = 'none';
   if (c === 'ichkomme') {
+    // Orgasmus zählen
+    recordOrgasm();
     // ich_komme Skript, dann Oh Gott Modus aktivieren
     await playScript('ich_komme');
     document.getElementById('speedSlider').value = 45;
@@ -1817,7 +2242,199 @@ function buildScripts() {
   });
 }
 
+// ═══════════════════════════════════════════════════════════
+// HELL / DUNKEL MODUS
+// ═══════════════════════════════════════════════════════════
+let lightMode = localStorage.getItem('hcLightMode') === '1';
+function toggleTheme() {
+  lightMode = !lightMode;
+  localStorage.setItem('hcLightMode', lightMode ? '1' : '0');
+  applyTheme();
+}
+function applyTheme() {
+  document.body.classList.toggle('light-mode', lightMode);
+  document.getElementById('btnTheme').textContent = lightMode ? '🌙' : '☀️';
+}
+applyTheme();
+
+// ═══════════════════════════════════════════════════════════
+// FAVORITEN
+// ═══════════════════════════════════════════════════════════
+function loadFavorites() {
+  try { return JSON.parse(localStorage.getItem('hcFavorites') || '[]'); } catch { return []; }
+}
+function saveFavorites(favs) {
+  localStorage.setItem('hcFavorites', JSON.stringify(favs));
+}
+
+function saveFavorite() {
+  if (!currentScriptId) return;
+  const s = SCRIPTS.find(x => x.id === currentScriptId);
+  const speed = parseInt(document.getElementById('speedSlider').value);
+  const dMin  = parseInt(document.getElementById('depthMinSlider').value);
+  const dMax  = parseInt(document.getElementById('depthMaxSlider').value);
+  const fav = {
+    id: Date.now(),
+    scriptId: currentScriptId,
+    name: s ? s.name : currentScriptId,
+    speed, dMin, dMax,
+    label: `${s ? s.icon : '⭐'} ${s ? s.name : currentScriptId} · ${speed}% · ${dMin}–${dMax}%`
+  };
+  const favs = loadFavorites();
+  favs.unshift(fav);
+  const trimmed = favs.slice(0, 8); // max 8
+  saveFavorites(trimmed);
+  renderFavorites();
+  showComment('Favorit gespeichert! ⭐');
+}
+
+function deleteFavorite(id) {
+  const favs = loadFavorites().filter(f => f.id !== id);
+  saveFavorites(favs);
+  renderFavorites();
+}
+
+async function loadFavorite(fav) {
+  await playScript(fav.scriptId);
+  document.getElementById('speedSlider').value = fav.speed;
+  document.getElementById('speedVal').textContent = fav.speed + '%';
+  document.getElementById('depthMinSlider').value = fav.dMin;
+  document.getElementById('depthMaxSlider').value = fav.dMax;
+  document.getElementById('depthMinVal').textContent = fav.dMin + '%';
+  document.getElementById('depthMaxVal').textContent = fav.dMax + '%';
+  await api('/hamp/velocity', 'PUT', { velocity: fav.speed });
+  await api('/slide', 'PUT', { min: fav.dMin, max: fav.dMax });
+}
+
+function renderFavorites() {
+  const favs = loadFavorites();
+  const list = document.getElementById('favList');
+  const btn  = document.getElementById('btnSaveFav');
+  if (btn) btn.disabled = !connected;
+  if (!favs.length) {
+    list.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:12px;">Noch keine Favoriten gespeichert.</div>';
+    return;
+  }
+  list.innerHTML = favs.map(f => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:10px 12px;">
+      <button onclick="loadFavorite(${JSON.stringify(f).replace(/"/g,'&quot;')})" style="flex:1;background:none;border:none;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.82rem;text-align:left;cursor:pointer;padding:0;">${f.label}</button>
+      <button onclick="deleteFavorite(${f.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;">✕</button>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SESSION STATISTIKEN & VERLAUFSGRAPH
+// ═══════════════════════════════════════════════════════════
+let statsTimer = null;
+let totalSessionSecs = parseInt(localStorage.getItem('hcStatTime') || '0');
+let totalOrgasms     = parseInt(localStorage.getItem('hcStatOrgasms') || '0');
+let scriptUsage      = JSON.parse(localStorage.getItem('hcStatScripts') || '{}');
+let speedSamples     = [];
+let depthSamples     = [];
+let graphData        = { speed: [], depth: [] }; // aktuelle Session
+
+function saveStats() {
+  localStorage.setItem('hcStatTime',    totalSessionSecs);
+  localStorage.setItem('hcStatOrgasms', totalOrgasms);
+  localStorage.setItem('hcStatScripts', JSON.stringify(scriptUsage));
+}
+
+function recordOrgasm() {
+  totalOrgasms++;
+  saveStats();
+  updateStatsUI();
+}
+
+function startStatsTimer() {
+  if (statsTimer) return;
+  graphData = { speed: [], depth: [] };
+  statsTimer = setInterval(() => {
+    if (!isPlaying) return;
+    totalSessionSecs++;
+    // Speed & Tiefe samplen
+    const spd = parseInt(document.getElementById('speedSlider').value) || 0;
+    const dMax = parseInt(document.getElementById('depthMaxSlider').value) || 0;
+    speedSamples.push(spd);
+    depthSamples.push(dMax);
+    graphData.speed.push(spd);
+    graphData.depth.push(dMax);
+    // Skript-Nutzung tracken
+    if (currentScriptId) {
+      scriptUsage[currentScriptId] = (scriptUsage[currentScriptId] || 0) + 1;
+    }
+    saveStats();
+    updateStatsUI();
+    drawGraph();
+  }, 1000);
+}
+
+function stopStatsTimer() {
+  if (statsTimer) { clearInterval(statsTimer); statsTimer = null; }
+}
+
+function updateStatsUI() {
+  document.getElementById('statTime').textContent = fmt(totalSessionSecs);
+  document.getElementById('statOrgasms').textContent = totalOrgasms;
+  const avg = speedSamples.length ? Math.round(speedSamples.reduce((a,b)=>a+b,0)/speedSamples.length) : 0;
+  document.getElementById('statAvgSpeed').textContent = avg ? avg + '%' : '–';
+  // Meistgenutztes Skript
+  let topId = null, topCount = 0;
+  for (const [id, count] of Object.entries(scriptUsage)) {
+    if (count > topCount) { topCount = count; topId = id; }
+  }
+  const topScript = topId ? (SCRIPTS.find(x => x.id === topId)?.name || topId) : '–';
+  document.getElementById('statTopScript').textContent = topScript;
+}
+
+function drawGraph() {
+  const canvas = document.getElementById('sessionGraph');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 400;
+  const H = 80;
+  canvas.width = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  const speedData = graphData.speed;
+  const depthData = graphData.depth;
+  if (speedData.length < 2) return;
+
+  const drawLine = (data, color) => {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    data.forEach((v, i) => {
+      const x = (i / (data.length - 1)) * W;
+      const y = H - (v / 100) * (H - 8) - 4;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  };
+
+  drawLine(speedData, '#818cf8');
+  drawLine(depthData, '#34d399');
+}
+
+function resetStats() {
+  totalSessionSecs = 0; totalOrgasms = 0;
+  scriptUsage = {}; speedSamples = []; depthSamples = [];
+  graphData = { speed: [], depth: [] };
+  saveStats();
+  updateStatsUI();
+  const canvas = document.getElementById('sessionGraph');
+  if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); }
+}
+
 buildScripts();
+
+// Init
+setTimeout(() => {
+  setCharacter('dominant');
+  renderFavorites();
+  updateStatsUI();
+}, 100);
 </script>
 </body>
 </html>
