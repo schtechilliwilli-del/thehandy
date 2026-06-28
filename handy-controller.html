@@ -107,10 +107,10 @@
 <body>
 
 <header>
-  <div style="position:relative;">
-    <button class="btn-theme" onclick="toggleTheme()" id="btnTheme" style="position:absolute;right:0;top:0;">🌙</button>
+  <div style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:4px;">
+    <h1>◈ HANDY CTRL</h1>
+    <button class="btn-theme" onclick="toggleTheme()" id="btnTheme" style="position:absolute;right:0;">🌙</button>
   </div>
-  <h1>◈ HANDY CTRL</h1>
   <p>Skript-Controller · The Handy API</p>
 </header>
 
@@ -1424,12 +1424,14 @@ async function connect() {
   setStatus('Verbinde…', '');
   document.getElementById('btnConnect').disabled = true;
   const info = await api('/info');
-  if (info && !info.name) {
+  if (info) {
     connected = true;
     setStatus('Verbunden ✓', 'connected');
     enableAll(true);
+    // Key speichern
+    localStorage.setItem('hcKey', connectionKey);
   } else {
-    setStatus('Fehler: ' + (info?.message || 'Ungültiger Key'), 'error');
+    setStatus('Fehler: Ungültiger Key oder Gerät offline', 'error');
   }
   document.getElementById('btnConnect').disabled = false;
 }
@@ -2301,6 +2303,9 @@ setTimeout(() => {
   setCharacter('dominant');
   renderFavorites();
   updateStatsUI();
+  // Gespeicherten Key wiederherstellen
+  const savedKey = localStorage.getItem('hcKey');
+  if (savedKey) document.getElementById('keyInput').value = savedKey;
 }, 100);
 </script>
 </body>
