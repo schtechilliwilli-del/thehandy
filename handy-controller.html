@@ -1318,7 +1318,17 @@ async function runOhGott() {
     'Ich fick dich bis du zitterst und leer bist.',
     'Jeder Tropfen gehört mir.'
   ];
-  startComments(ohComments);
+
+  // CommentTimer explizit stoppen und neu starten
+  if (commentTimer) { clearInterval(commentTimer); commentTimer = null; }
+  let ogIdx = 0;
+  const shuffled = [...ohComments].sort(() => Math.random() - 0.5);
+  showComment(shuffled[0]);
+  commentTimer = setInterval(() => {
+    ogIdx = (ogIdx + 1) % shuffled.length;
+    showComment(shuffled[ogIdx]);
+  }, 9000);
+
   startProgress();
   scheduleOhGottPulse();
 }
