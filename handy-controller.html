@@ -325,62 +325,22 @@
   <button onclick="resetStats()" style="margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:0.78rem;cursor:pointer;">↺ Statistiken zurücksetzen</button>
 </div>
 
-<!-- Text-to-Speech -->
+<!-- KI-Kommentare -->
 <div class="card" id="ttsCard">
-  <div class="card-title">▸ Stimme</div>
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
-      <input type="checkbox" id="ttsEnabled" onchange="toggleTTS()" style="width:15px;height:15px;accent-color:var(--accent);" />
-      <span>Stimme aktivieren</span>
-    </label>
-    <span id="ttsStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
-  </div>
-
-  <!-- Charakter -->
+  <div class="card-title">▸ KI-Kommentare</div>
   <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:8px;">CHARAKTER</div>
   <div style="display:flex;gap:8px;margin-bottom:14px;">
     <button id="charZaertlich" onclick="setCharacter('zaertlich')" class="btn-auto">🌸 Zärtlich</button>
     <button id="charDominant"  onclick="setCharacter('dominant')"  class="btn-auto">👑 Dominant</button>
     <button id="charDirty"     onclick="setCharacter('dirty')"     class="btn-auto">🔥 Dirty</button>
   </div>
-
-  <!-- Stöhnen -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-    <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
-      <input type="checkbox" id="moanEnabled" onchange="toggleMoan()" style="width:15px;height:15px;accent-color:var(--accent);" />
-      <span>Stöhn-Sounds</span>
-    </label>
-    <div class="slider-row" style="flex:1;margin-bottom:0;">
-      <span class="slider-label" style="width:60px">Häufigkeit</span>
-      <input type="range" id="moanFreq" min="5" max="30" value="15" oninput="document.getElementById('moanFreqVal').textContent=this.value+'s'" style="flex:1;" />
-      <span class="slider-val" id="moanFreqVal">15s</span>
-    </div>
-  </div>
-
-  <!-- KI-Kommentare -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+  <div style="display:flex;align-items:center;gap:12px;">
     <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.82rem;color:var(--muted);">
       <input type="checkbox" id="aiEnabled" onchange="toggleAI()" style="width:15px;height:15px;accent-color:var(--success);" />
-      <span>KI-Kommentare live</span>
+      <span>KI generiert live neue Texte</span>
     </label>
     <span id="aiStatus" style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;">AUS</span>
   </div>
-
-  <!-- Lautstärke & Tempo -->
-  <div class="slider-row">
-    <span class="slider-label">Lautstärke</span>
-    <input type="range" id="ttsVolume" min="0" max="1" step="0.1" value="1" oninput="document.getElementById('ttsVolVal').textContent=Math.round(this.value*100)+'%'" />
-    <span class="slider-val" id="ttsVolVal">100%</span>
-  </div>
-
-  <!-- Stimme -->
-  <div style="margin-top:8px;">
-    <div style="font-size:0.7rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px;">STIMME (GERÄT)</div>
-    <select id="ttsVoiceSelect" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.82rem;outline:none;">
-      <option value="">– wird geladen –</option>
-    </select>
-  </div>
-  <button onclick="ttsTest()" style="margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:0.8rem;cursor:pointer;">🔊 Test</button>
 </div>
 
 <!-- Befehl -->
@@ -1491,12 +1451,12 @@ function enableAll(on) {
 // ═══════════════════════════════════════════════════════════
 let ttsActive = false;
 let ttsVoices = [];
-let currentCharacter = 'dominant'; // 'zaertlich' | 'dominant' | 'dirty'
+let currentCharacter = 'dominant';
 let moanActive = false;
 let moanTimer = null;
 let aiCommentsActive = false;
 let sessionStartTime = null;
-let escalationLevel = 0; // 0=warm, 1=mittel, 2=intensiv, 3=maximal
+let escalationLevel = 0;
 
 // ── Charakter-Profile ──────────────────────────────────────
 const CHARACTERS = {
@@ -1562,66 +1522,11 @@ function getEscalatedComment(scriptId) {
   return combined[Math.floor(Math.random() * combined.length)];
 }
 
-// ── Stöhnen per Web Audio API ──────────────────────────────
-let audioCtx = null;
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function playMoan() {
-  if (!moanActive || !isPlaying) return;
-  try {
-    const ctx = getAudioCtx();
-    const duration = 0.8 + Math.random() * 1.2;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-
-    // Stimme simulieren: tiefer Sinus mit Vibrato
-    osc.type = 'sine';
-    const baseFreq = currentCharacter === 'dominant' ? 180 + Math.random() * 60
-                   : currentCharacter === 'zaertlich' ? 250 + Math.random() * 80
-                   : 210 + Math.random() * 70;
-    osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
-    // Frequenzkurve: steigt kurz an, fällt dann ab (Stöhner)
-    osc.frequency.linearRampToValueAtTime(baseFreq * 1.3, ctx.currentTime + duration * 0.3);
-    osc.frequency.linearRampToValueAtTime(baseFreq * 0.85, ctx.currentTime + duration);
-
-    // Lautstärke: ein- und ausblenden
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(parseFloat(document.getElementById('ttsVolume').value) * 0.4, ctx.currentTime + 0.1);
-    gain.gain.linearRampToValueAtTime(parseFloat(document.getElementById('ttsVolume').value) * 0.3, ctx.currentTime + duration - 0.2);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-
-    // Tief-Filter für wärmeren Klang
-    filter.type = 'lowpass';
-    filter.frequency.value = 800;
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-  } catch(e) {}
-}
-
-function toggleMoan() {
-  moanActive = document.getElementById('moanEnabled').checked;
-  if (moanActive) scheduleMoan();
-  else { if (moanTimer) { clearTimeout(moanTimer); moanTimer = null; } }
-}
-
-function scheduleMoan() {
-  if (!moanActive) return;
-  const freq = parseInt(document.getElementById('moanFreq').value) * 1000;
-  const jitter = (Math.random() - 0.5) * freq * 0.5;
-  moanTimer = setTimeout(() => {
-    playMoan();
-    scheduleMoan();
-  }, freq + jitter);
-}
+// ── Stöhnen per Web Audio API ── ENTFERNT ──────────────────
+let moanActive = false;
+let moanTimer = null;
+function toggleMoan() {}
+function scheduleMoan() {}
 
 // ── KI-Kommentare live ─────────────────────────────────────
 let aiTimer = null;
@@ -1639,7 +1544,7 @@ function scheduleAIComment() {
   aiTimer = setTimeout(async () => {
     await fetchAIComment();
     scheduleAIComment();
-  }, 12000 + Math.random() * 8000);
+  }, 10000 + Math.random() * 6000);
 }
 
 async function fetchAIComment() {
@@ -1653,11 +1558,7 @@ async function fetchAIComment() {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 60,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 60, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await res.json();
     const text = data?.content?.[0]?.text?.trim();
@@ -1665,97 +1566,63 @@ async function fetchAIComment() {
   } catch(e) {}
 }
 
-// ── TTS Basis ──────────────────────────────────────────────
-function loadVoices() {
-  ttsVoices = window.speechSynthesis.getVoices();
-  const sel = document.getElementById('ttsVoiceSelect');
-  sel.innerHTML = '';
-  const sorted = [...ttsVoices].sort((a, b) => {
-    const aDE = a.lang.startsWith('de') ? 0 : 1;
-    const bDE = b.lang.startsWith('de') ? 0 : 1;
-    return aDE - bDE;
-  });
-  sorted.forEach((v, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = v.name + ' (' + v.lang + ')';
-    if (v.lang.startsWith('de') && !sel.querySelector('[selected]')) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-
-window.speechSynthesis.onvoiceschanged = loadVoices;
-setTimeout(loadVoices, 500);
-
-function toggleTTS() {
-  ttsActive = document.getElementById('ttsEnabled').checked;
-  document.getElementById('ttsStatus').textContent = ttsActive ? 'AN' : 'AUS';
-  document.getElementById('ttsStatus').style.color = ttsActive ? 'var(--accent)' : 'var(--muted)';
-  if (!ttsActive) window.speechSynthesis.cancel();
-}
-
-function speak(text) {
-  if (!ttsActive) return;
-  window.speechSynthesis.cancel();
-  const char = CHARACTERS[currentCharacter];
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.volume = parseFloat(document.getElementById('ttsVolume').value);
-  utt.rate   = char.rate;
-  utt.pitch  = char.pitch;
-  const sel = document.getElementById('ttsVoiceSelect');
-  const idx = parseInt(sel.value);
-  if (!isNaN(idx) && ttsVoices[idx]) utt.voice = ttsVoices[idx];
-  else utt.lang = 'de-DE';
-  window.speechSynthesis.speak(utt);
-}
-
-function ttsTest() {
-  const testTexts = { zaertlich: 'Ich spür dich so gut.', dominant: 'Du gehörst mir.', dirty: 'Oh Gott, bist du hart!' };
-  speak(testTexts[currentCharacter]);
-}
+// ── TTS entfernt ───────────────────────────────────────────
+let ttsActive = false;
+let ttsVoices = [];
+function speak() {}
+function loadVoices() {}
+function toggleTTS() {}
+function ttsTest() {}
 
 // ═══════════════════════════════════════════════════════════
 // KOMMENTARE & PROGRESS
 // ═══════════════════════════════════════════════════════════
 function startComments(list) {
   if (commentTimer) clearInterval(commentTimer);
-  // Session-Timer starten falls noch nicht läuft
   if (!sessionStartTime) sessionStartTime = Date.now();
-  // Stöhnen starten falls aktiv
-  if (moanActive && !moanTimer) scheduleMoan();
-  // KI-Kommentare starten falls aktiv
   if (aiCommentsActive) { if (aiTimer) clearTimeout(aiTimer); scheduleAIComment(); }
 
-  let idx = 0;
-  const getNext = () => {
-    // Wenn KI aktiv: KI übernimmt, hier nur Fallback
-    if (aiCommentsActive) return null;
-    // Eskalierte Texte mischen mit Skript-Texten
+  // Gemischter Pool: Skript-Texte + Charakter-Texte der aktuellen Eskalationsstufe
+  const buildPool = () => {
     updateEscalation();
-    const char = CHARACTERS[currentCharacter];
-    const escalPool = char.globalTexts[escalationLevel];
-    const combined = [...list, ...escalPool];
-    idx = (idx + 1) % combined.length;
-    return combined[Math.floor(Math.random() * combined.length)];
+    const escalPool = CHARACTERS[currentCharacter].globalTexts[escalationLevel];
+    return [...list, ...escalPool];
+  };
+
+  let pool = buildPool();
+  let usedIdx = new Set();
+
+  const getNext = () => {
+    if (aiCommentsActive) return null;
+    // Pool neu aufbauen wenn Eskalation sich geändert hat
+    pool = buildPool();
+    // Alle benutzt? Reset
+    if (usedIdx.size >= pool.length) usedIdx.clear();
+    // Zufälligen unbenutzten Text wählen
+    let attempts = 0;
+    let idx;
+    do { idx = Math.floor(Math.random() * pool.length); attempts++; }
+    while (usedIdx.has(idx) && attempts < 20);
+    usedIdx.add(idx);
+    return pool[idx];
   };
 
   showComment(list[0]);
   commentTimer = setInterval(() => {
     const text = getNext();
     if (text) showComment(text);
-  }, 8000);
+  }, 7000);
 }
 
 function showComment(text) {
   const box = document.getElementById('claudeComment');
   box.innerHTML = '';
-  speak(text);
   let i = 0;
   function type() {
     if (i < text.length) {
       box.innerHTML = text.slice(0,i+1) + '<span class="typing-cursor"></span>';
       i++;
-      setTimeout(type, 30 + Math.random() * 20);
+      setTimeout(type, 28 + Math.random() * 18);
     } else {
       box.innerHTML = text;
     }
